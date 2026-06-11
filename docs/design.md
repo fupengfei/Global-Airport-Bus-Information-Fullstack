@@ -215,9 +215,66 @@ Web 服务,标准部署:
 
 **保留为有意取舍**:`fetch_failed` 保留(无损承载 data.json);`price/duration` 用字符串;收藏即订阅(留 `notify` 位);密码找回延后 Phase 2。
 
+## Autoplan Review(4 阶段 single-model 评审 + 自动决策)
+
+第二轮:CEO / Design / Eng / DX 四个独立 reviewer(无对话上下文)。Codex 缺席,单模型。下面是按 6 原则**自动决策**已采纳的修复(P1 完整性/P3 务实/P4 DRY/P5 显式)。跨阶段共识:文档把 DB 层(离用户最远)打磨到位,把 API + UI 层(用户和前端真正接触的)留空。
+
+### Eng 自动采纳(安全 + 正确性,P1)
+
+- **E1 乐观锁**:`bus` 加 `version INT`(已入 DDL)。两管理员同改一条 bus 防丢失更新 + hash 竞态;不匹配返回 409。
+- **E2 canonicalizer 契约**:content_hash 输入必须 UTF-8 字节 + Unicode NFC 归一 + trim 尾空白;null/空串统一归一为「缺失」。**导入器与运行时必须共用同一个 canonicalizer**,否则导入后第一次管理员保存必触发幻象变更。
+- **E3 投递可靠性**:`AFTER_COMMIT + @Async` 实为 at-most-once 不是 at-least-once(异步线程挂/进程崩 → 通知永久丢失无痕)。加一个 `@Scheduled` 对账兜底:周期扫「有订阅者但缺 message(ref_bus_id,ref_hash)」的 bus 回填。不上 outbox(对个人项目过度)。**注:此项前提是保留推送闭环——见门控 UC1。**
+- **E4 异步执行器**:定义有界 `ThreadPoolTaskExecutor`(CallerRuns 拒绝策略),`@Async("pushExecutor")`。不可用默认 SimpleAsyncTaskExecutor(无界线程)。
+- **E5 模块依赖规则**:所有 bus 变更走 `bus.BusCommandService.save()`(独占 hash 计算 + 事件发布),admin 调用它不重复实现;audit 用 `@Around` 切面挂标记注解,不散落手写。
+- **E6 SQL 注入**:MyBatis 一律 `#{}`;`${}` 仅用于白名单 ORDER BY 列(走枚举映射)。加 CI grep 拦 mapper XML 里的 `${`。
+- **E7 XSS**:前端所有用户/管理员自由文本走 `{{ }}` 自动转义,禁 `v-html`;站内信模板插值必须 HTML 转义 params。
+- **E8 URL 校验**:image/file/avatar/official URL 写入时校验 scheme 白名单(仅 http/https),渲染加 `rel="noopener noreferrer"`,挡 `javascript:`/SSRF。
+- **E9 refresh token 可撤销**:修正「不做黑名单」。access token 无状态短期;**refresh token 存 Redis/DB 可撤销**(否则登出/强制下线不可能)。两个概念分开。
+- **E10 后台鉴权**:admin service 方法 `@PreAuthorize` 默认拒绝;明确 OPERATOR vs SUPER_ADMIN 能力矩阵;`ticket_reply.author_id/author_type` 服务端从已认证主体取,绝不信请求体。
+- **E11 导入器不发事件**:种子导入走 `suppressEvents` 路径,避免 re-import 给已订阅用户群发幻象通知。
+- **E12 批量插入分块**:`INSERT message` 按 500 行/批迭代,防 `max_allowed_packet` 爆 + 长事务持锁。
+- **E13 Redis 未读计数**:读路径 key 缺失时只从 MySQL `COUNT(*)` 重建(绝不靠裸 INCR 播种);INCR 设为「key 存在才加」(Lua/EXISTS);TTL 强制非可选。
+- **E14 SYSTEM 消息去重洞**:`UNIQUE(user_id,ref_bus_id,ref_hash)` 中 NULL 列在 MySQL 不防重复 → 无 bus 的 SYSTEM 消息可无限重复插。给 SYSTEM 消息单独非空去重 token。
+- **E15 ref_bus_id 无 FK**:文档显式声明「有意不加 FK」(message 历史在 bus 删后保留),不是疏漏。
+- **E16 字符集/collation**:已入 DDL(JDBC 连接层 utf8mb4 + 自然键 _as_cs)。
+- **E17 images/files 先删后插**:会换 PK + 破坏单图引用。MVP 接受并记为已知限制;需要单图编辑时改按 url upsert。
+
+### DX 自动采纳(契约 + 本地环,P1)
+
+- **D1 API 契约(CRITICAL)**:开工前补一节 **API Contract** —— 每模块一张表(method/path/auth/请求/成功形状/错误)。锁死跨切面:`/api/v1` 版本、分页约定(`page/size` + 包络字段)、URL 用 `id` 还是 `source_id`、auth 头格式。当前实现顺序把前端串行卡在后端后面;有契约才能并行 mock。
+- **D2 错误包络(CRITICAL)**:定一个规范错误体 `{code, message, details:[{field,issue}], traceId}`。**决策:真实 HTTP 状态码带类别 + body `code` 带业务原因**(优于 200-带-body-code)。给每模块起始错误码枚举(USER_USERNAME_TAKEN / AUTH_BAD_CREDENTIALS / TICKET_CLOSED…)。
+- **D3 词汇表**:内部表名 → 对外资源名映射:资源名定 `bus`(不混用 route/line),对外概念定 `favorite`(不混 subscription),并声明 user/admin 是否独立认证域。
+- **D4 TTHW 拉到 5 分钟**:`data.json` vendor 进仓(不依赖外部 GitHub URL);种子导入做成启动时自动幂等(env flag 开关);**前端进 docker-compose + 预配 Vite proxy 免 CORS**;给 `.env.example`;**控制台/README 打印种子 admin 账号密码**;加 Quickstart 命令序列。
+- **D5 OpenAPI**:加 springdoc-openapi(Spring Boot 3 标准),`/swagger-ui.html` 做单一事实源;可选从 spec 生 TS 类型给前端,消除契约漂移。
+- **D6 i18n 契约**:明确两套并存——**错误服务端本地化**(前端直显 message,受 Accept-Language 驱动)vs **站内信前端渲染**(前端持 template→文案);定 Accept-Language 与 user.locale 优先级;发布 `template_code` 注册表(每 code 的 params 模式 + 未知 code 兜底)。
+
+### Design 自动采纳(结构性 UX,P1/P5)
+
+- **DS1 直达**:落地页直接出两张城市卡片(维也纳/上海)+ 机场搜索框;单选项的层级自动跳过。不要为两个城市强迫三级下拉。
+- **DS2 详情页信息优先级**:决策栏(目的地/时长/价格/运营时间)首屏免滚;alert 置顶且过期不显示;停靠站用横向 stepper 不用表格;班次/图片/文件默认折叠。
+- **DS3 状态全集**:loading 骨架屏、错误、`fetch_failed` 徽标 + last_updated、过期 alert(拍板前端按 end_date 过滤或后端不返)、部分数据缺失。空态文案要说明「仅覆盖两城」而非泛泛无结果。
+- **DS4 零登录查询**:查询全程不出现登录墙;收藏点击时才温和触发登录。
+- **DS7 多语言布局**:按钮/导航弹性宽度(德语最长不破版);统一字体栈覆盖 Latin+CJK;数据原文展示加「站名为当地语言」说明。
+
+### 自动决策审计摘要
+
+| # | 阶段 | 决策 | 分类 | 原则 |
+|---|------|------|------|------|
+| E1-E17 | Eng | 采纳全部安全/正确性修复 | Mechanical | P1 完整性 |
+| D1-D6 | DX | 采纳 API 契约 + 错误包络 + TTHW + OpenAPI | Mechanical | P1 完整性 |
+| DS1-DS7 | Design | 采纳结构性 UX(直达/状态/零登录/布局) | Mechanical | P1+P5 |
+| E3 兜底扫描 | Eng | 采纳(闭环保留,见下) | Taste | P3 务实 |
+| DS5 移动端前端选型 | Design | **已定:Element Plus 全站 + 前台移动优先** | Taste | P3 务实 |
+| UC1 范围 | CEO+Design | **已定:保全功能 + 查询优先排序** | User Challenge | 用户裁决 |
+
+### 门控决策(已定)
+
+- **UC1 范围**:保留全部功能(账号/收藏/站内信/推送/工单/后台/多语言)。这是学习/作品项目,全栈正是练手目标,评审的「砍范围」前提(产品价值优化)不适用。**但采纳排序洞见**:先把查询主线(查询+详情)端到端跑通可部署,其余作为独立模块逐个加;DB 先建 9 张巴士表,user/message/ticket/admin/audit 随模块开工再加 migration。E3 推送兜底扫描随闭环保留。
+- **DS5 前端**:Element Plus 全站(一套栈、学习面单一)。**前台强制移动优先**——核心页先设计窄屏,`el-table` 移动端降级为卡片堆叠,级联选择器换全屏 picker;Element Plus 在 /admin 桌面后台是强项。
+
 ## The Assignment
 
-在写任何业务代码之前,先做**第 1 步**:把上面已经定死自然键、唯一索引、外键、字段类型的 schema 落成最终 MySQL 建表 DDL(用 Flyway 管理迁移),并写出**幂等**种子导入器——以 `bus.source_id`、`country.code`、`(country_id, name)` 做 upsert,重跑两次结果一致,真正把维也纳和上海两城数据导进库里跑通。**数据模型对了,后面所有 API 和页面都顺;数据模型错了,后面全返工。** 这是整个项目风险最高、最该先锁死的一环——对抗评审的火力也全压在这里。
+在写任何业务代码之前,先做**第 1 步**:把上面已经定死自然键、唯一索引、外键、字段类型、`version` 乐观锁的 schema 落成最终 MySQL 建表 DDL(Flyway),并写出**幂等**种子导入器——以 `bus.source_id`、`country.code`、`(country_id, name)` 做 upsert,**且导入器与运行时共用同一个 canonicalizer**(E2),重跑两次结果一致。**但**(见门控 UC1)先只锁巴士查询那 9 张表 + 跑通查询主线,user/message/ticket/admin/audit 待对应模块开工再加 migration。**并在写第一个 controller 前先定 API 契约 + 错误包络(D1/D2)**——这是前后端能并行的前提。
 
 ## What I noticed about how you think
 

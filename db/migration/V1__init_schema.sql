@@ -5,6 +5,11 @@
 -- 自然键原则: 保留 data.json 的业务键(bus.source_id / country.code / airport.code)
 --            并加唯一索引,使种子导入器可幂等 upsert。
 -- 落地后请移动到 backend/src/main/resources/db/migration/ 由 Flyway 接管。
+--
+-- [autoplan-eng] 连接层字符集: JDBC URL 必须显式 characterEncoding=utf8mb4&useUnicode=true,
+--   否则德文 ä/ö/ü 与 € 在写入时被改写,会静默改变 content_hash(跨环境 hash 漂移)。
+-- [autoplan-eng] 自然键(source_id/code)用 _as_cs 区分大小写避免误折叠;展示/搜索名保留默认 _ai_ci。
+-- [autoplan-eng] bus.version 乐观锁列: 两个管理员同时改同一条 bus 时防丢失更新 + hash 竞态。
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
@@ -13,7 +18,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 CREATE TABLE country (
   id    BIGINT       NOT NULL AUTO_INCREMENT,
-  code  VARCHAR(8)   NOT NULL COMMENT 'ISO 国家码,自然键',
+  code  VARCHAR(8)   NOT NULL COLLATE utf8mb4_0900_as_cs COMMENT 'ISO 国家码,自然键',
   name  VARCHAR(128) NOT NULL COMMENT '国家名(中文)',
   PRIMARY KEY (id),
   UNIQUE KEY uk_country_code (code)
@@ -31,7 +36,7 @@ CREATE TABLE city (
 CREATE TABLE airport (
   id           BIGINT       NOT NULL AUTO_INCREMENT,
   city_id      BIGINT       NOT NULL,
-  code         VARCHAR(8)   NOT NULL COMMENT 'IATA 机场码,全局唯一自然键',
+  code         VARCHAR(8)   NOT NULL COLLATE utf8mb4_0900_as_cs COMMENT 'IATA 机场码,全局唯一自然键',
   name         VARCHAR(128) NOT NULL,
   official_url VARCHAR(512) NULL,
   PRIMARY KEY (id),
@@ -42,7 +47,7 @@ CREATE TABLE airport (
 
 CREATE TABLE bus (
   id              BIGINT       NOT NULL AUTO_INCREMENT,
-  source_id       VARCHAR(64)  NOT NULL COMMENT 'data.json 业务键, 如 "vie-vab1", 导入幂等键',
+  source_id       VARCHAR(64)  NOT NULL COLLATE utf8mb4_0900_as_cs COMMENT 'data.json 业务键, 如 "vie-vab1", 导入幂等键; as_cs 防大小写折叠误并行',
   airport_id      BIGINT       NOT NULL,
   route           VARCHAR(128) NULL,
   destination     VARCHAR(255) NULL,
@@ -53,7 +58,8 @@ CREATE TABLE bus (
   operating_hours VARCHAR(512) NULL COMMENT '展示文本',
   last_updated    DATE         NULL COMMENT '日期粒度, 无时间部分',
   fetch_failed    TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '无损承载 data.json',
-  content_hash    CHAR(64)     NULL COMMENT 'SHA256(规范化 JSON, 含子表), 变更检测',
+  content_hash    CHAR(64)     NULL COMMENT 'SHA256(规范化 JSON, 含子表), 变更检测; 导入后应非空',
+  version         INT          NOT NULL DEFAULT 0 COMMENT '乐观锁: UPDATE ... WHERE id=? AND version=?, 不匹配 409',
   updated_at      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   UNIQUE KEY uk_bus_source (source_id),
