@@ -272,6 +272,43 @@ Web 服务,标准部署:
 - **UC1 范围**:保留全部功能(账号/收藏/站内信/推送/工单/后台/多语言)。这是学习/作品项目,全栈正是练手目标,评审的「砍范围」前提(产品价值优化)不适用。**但采纳排序洞见**:先把查询主线(查询+详情)端到端跑通可部署,其余作为独立模块逐个加;DB 先建 9 张巴士表,user/message/ticket/admin/audit 随模块开工再加 migration。E3 推送兜底扫描随闭环保留。
 - **DS5 前端**:Element Plus 全站(一套栈、学习面单一)。**前台强制移动优先**——核心页先设计窄屏,`el-table` 移动端降级为卡片堆叠,级联选择器换全屏 picker;Element Plus 在 /admin 桌面后台是强项。
 
+## 增强建议(brainstorming 第三轮,已采纳)
+
+四条之前评审未覆盖的增强。均为**增量**:不动已锁的 V1 巴士 9 表核心,走后续 migration / 前端配置,按价值排序逐个加。
+
+### EN1 可发现性 / SEO(战略价值最高)
+
+公开信息站若 Google 搜不到等于不存在;Vue SPA 对爬虫渲染空白页。**公开前台用 SSG/预渲染**(`vite-ssg` 或迁到 Nuxt),为每条线路生成可爬取静态页(`/bus/vie-vab1` 维度的 URL,用 `source_id` 不用自增 id),目标命中长尾查询(「VIE 机场 巴士 西站 价格」「浦东机场大巴时刻」)。
+
+- 与 DS5 兼容:SSG 仍是 Vue,前台移动优先不变;`/admin` 后台保持 SPA(无需 SEO)。
+- 与 D1 兼容:静态页构建时拉 API/直接读 data.json 预渲染;运行时动态数据(收藏态)再 hydrate。
+- 配套:`<title>`/`<meta>`/OpenGraph/JSON-LD 结构化数据(`PublicTransport` schema.org),sitemap.xml。
+
+### EN2 反向检索(贴合旅客意图)
+
+旅客真实意图常是「我要去 X,哪条线到?」。当前只有 国家→城市→机场 树。加**反向查找:目的地 / 站名 → 线路**。
+
+- 实现:MySQL `FULLTEXT` 索引(需 ngram parser 支持中文分词)覆盖 `bus.destination` + `bus_stop.name`;或导入时建一张去重的 `bus_search(bus_id, term)` 倒排表,前端 autocomplete。
+- 首屏搜索框「你要去哪 / 在哪个机场?」一个入口同时支持正向(机场)和反向(目的地/站)。
+
+### EN3 变更历史 `bus_revision`(让推送从噪音变信号)
+
+现在 `content_hash` 只说「变了」,推送也只说「更新了」。存快照让用户知道**变了什么**。
+
+- 新表:`bus_revision(id, bus_id, content_hash, snapshot_json, changed_summary, created_at)`,FK→bus;**UNIQUE(bus_id, content_hash)**。
+- 每次 hash 变化时落一条 revision,与上一条 `snapshot_json` 做 diff 算 `changed_summary`(如「price: €11→€13」「末班车 24:00→23:30」)。
+- 推送 `message.params_json` 带上 diff,站内信显示「价格上调」而非泛泛「已更新」。复用现有 hash 基础设施,是闭环最值的升级。
+- 前端线路详情可加「更新记录」时间线。
+
+### EN4 PWA + 数据可信度(贴合真实场景)
+
+- **PWA**:`vite-plugin-pwa`,缓存最近看过的线路 + 可装桌面。旅客在机场弱网/无网时仍能看上次查的车。
+- **数据可信度**:`bus` 加 `last_verified DATE`,前端每条线路显示「数据核对于 N 天前」(超过阈值灰色提示「可能过时」)。加一键「信息有误/已过期」→ 自动建 `ticket`(`type=DATA_ISSUE`,关联 `bus_id`)。把用户(发现腐烂)和管理员(去修)用现有工单系统接成闭环,直击「手工维护数据必腐烂」的核心风险。
+
+### 增强项排序建议
+
+EN1(SEO)与 EN2(反向检索)归入查询主线打磨,**紧跟查询页之后**做;EN3(变更历史)随推送闭环一起做(它让闭环真正有意义);EN4 PWA 收尾打磨期,数据可信度随工单模块。
+
 ## The Assignment
 
 在写任何业务代码之前,先做**第 1 步**:把上面已经定死自然键、唯一索引、外键、字段类型、`version` 乐观锁的 schema 落成最终 MySQL 建表 DDL(Flyway),并写出**幂等**种子导入器——以 `bus.source_id`、`country.code`、`(country_id, name)` 做 upsert,**且导入器与运行时共用同一个 canonicalizer**(E2),重跑两次结果一致。**但**(见门控 UC1)先只锁巴士查询那 9 张表 + 跑通查询主线,user/message/ticket/admin/audit 待对应模块开工再加 migration。**并在写第一个 controller 前先定 API 契约 + 错误包络(D1/D2)**——这是前后端能并行的前提。
