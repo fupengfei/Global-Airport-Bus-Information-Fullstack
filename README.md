@@ -11,9 +11,10 @@
 
 ## 文档
 
-- 设计文档:[docs/design.md](docs/design.md)(经多 agent 对抗评审修订)
-- 数据库 schema:[db/migration/V1__init_schema.sql](db/migration/V1__init_schema.sql)
+- 设计文档:[docs/design.md](docs/design.md)(纯设计层,不含数据库 schema;经多 agent 对抗评审修订)
+
+数据库 schema 不在设计文档内,留待实现环节(基于 design.md「系统核心数据结构」落地)。
 
 ## 下一步
 
-详见 design.md 的 Next Steps。第一步:用 Flyway 跑 V1 schema,写**幂等**种子导入器(以 `bus.source_id` / `country.code` / `(country_id,name)` upsert)把两城数据导入。
+详见 design.md 的 The Assignment。实现第一步:基于「系统核心数据结构」设计具体 schema + 写幂等种子导入器,把维也纳/上海两城数据导入并跑通查询主线。

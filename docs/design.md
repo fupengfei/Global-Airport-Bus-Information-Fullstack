@@ -70,40 +70,37 @@ com.airportbus
 └── common    异常、统一响应、i18n、安全、Redis 配置
 ```
 
-### 数据模型(MySQL,源自 data.json)
+### 系统核心数据结构(参考 data.json)
 
-> **自然键原则(对抗评审 P0)**:data.json 里 `bus` 有业务字符串 ID(如 `"vie-vab1"`),country/airport 有 `code`。**必须保留这些自然键并加唯一索引**,否则种子导入器无法做幂等 upsert(重跑就插重复数据)。下面每张表都显式标了唯一键和外键。所有自增主键统一 `BIGINT`;字段类型已按 data.json 真实值定死。
+> 这里只描述系统要承载的**核心领域数据(含展示字段)**,作为设计层的数据契约。**具体数据库 schema(建表、字段类型、索引、外键、迁移、缓存键)一律交由实现环节处理**,不在本设计文档内。数据初始结构参考 [data.json](https://github.com/fupengfei/Global-Airport-Bus-Information/blob/main/data.json)。
 
-巴士数据(读多写少,整棵树适合 Redis 缓存):
-- `country(id, code, name)` — **UNIQUE(code)**
-- `city(id, country_id, name)` — **UNIQUE(country_id, name)**(city 在 data.json 里只有 name,无 code);FK→country
-- `airport(id, city_id, code, name, official_url)` — **UNIQUE(code)**(IATA 全局唯一);FK→city
-- `bus(id, source_id, airport_id, route, destination, operator, official_url, duration, price, operating_hours, last_updated DATE, fetch_failed, content_hash, updated_at)`
-  - **`source_id VARCHAR(64)` UNIQUE** ← data.json 的 `"vie-vab1"`,导入器的幂等键 + 将来回连抓取源的锚点
-  - FK→airport;**INDEX(airport_id)**
-  - `last_updated` 用 `DATE`(数据是日期粒度,无时间);`fetch_failed BOOLEAN` 保留以无损承载 data.json
-  - **`price / duration / operating_hours` 是 `VARCHAR(512)` 展示文本,不做结构化查询**——真实值形如「全价单程 €11 / 往返 €20」「去机场 03:00-24:00 / 返程 04:30-次日 01:00」,带方向/币种/中外文混排,强拆成数值会丢信息。若将来要按价格排序,另加派生列 `price_amount DECIMAL`,不动原文。这是有意决策。
-  - `content_hash`:见下方「变更检测算法」,**必须覆盖子表**
-- `bus_stop(id, bus_id, seq, name)` — stops 数组;**UNIQUE(bus_id, seq)**;FK→bus ON DELETE CASCADE;导入按数组下标(从 1)赋 seq
-- `bus_schedule(id, bus_id, time_range, interval_text, note)` — **`interval` 是 MySQL 保留字,改名 `interval_text`**;FK→bus CASCADE
-- `bus_image(id, bus_id, url, caption)` — FK→bus CASCADE
-- `bus_file(id, bus_id, name, url)` — FK→bus CASCADE
-- `bus_alert(id, bus_id, type, message, start_date DATE NULL, end_date DATE NULL)` — 日期用 `DATE` 且允许 NULL(长期提醒无起止);`type VARCHAR(32)`(info/reroute…);FK→bus CASCADE
+层级:`国家 → 城市 → 机场 → 巴士线路 → 子信息`。
 
-用户与互动:
-- `user(id, username, password_hash, email, nickname, avatar_url, locale, status, created_at, updated_at)` — 密码 BCrypt;**UNIQUE(username)、UNIQUE(email)**(重复注册返回 409)
-- `favorite(id, user_id, bus_id, notify, created_at)` — 收藏即订阅;**UNIQUE(user_id, bus_id)**、**INDEX(bus_id)**(推送时反查订阅者的热路径);FK→user/bus。`notify BOOLEAN DEFAULT 1` 几乎零成本,留出「收藏但不打扰」的将来能力
-- `message(id, user_id, type, title, template_code, params_json, ref_bus_id, ref_hash, is_read, created_at)` — 站内信;**INDEX(user_id, is_read, created_at)**;**UNIQUE(user_id, ref_bus_id, ref_hash)** 做推送幂等(管理员连点保存不重复发)。`template_code + params_json` 存模板而非定死文本,前端按 `user.locale` 渲染 → 站内信也能多语言
-- `ticket(id, user_id, type, title, content, status, created_at, updated_at)` — 建议工单;`status` 状态机:`OPEN → REPLIED → CLOSED`(管理员回复置 REPLIED,任一方关闭置 CLOSED,用户再回复可从 CLOSED 重开为 OPEN)
-- `ticket_reply(id, ticket_id, author_type, author_id, content, created_at)` — `author_type` ∈ {USER, ADMIN},配合 `author_id` 跨 user/admin_user 两套体系引用;FK→ticket CASCADE
+巴士领域数据(读多写极少):
+- **国家**:国家码、名称。
+- **城市**:名称(data.json 中城市只有名称)。
+- **机场**:IATA 码、名称、官网链接。
+- **巴士线路(核心实体)**,展示字段:
+  - 业务标识:data.json 的 `id`(如 `"vie-vab1"`),作为线路稳定业务键(导入幂等 + 将来回连数据源的锚点)
+  - `route` 线路名、`destination` 目的地、`operator` 运营商、`officialUrl` 官方链接
+  - `duration` 时长、`price` 价格、`operatingHours` 运营时间 —— 均为**人类可读展示文本**(如「全价单程 €11 / 往返 €20」「去机场 03:00-24:00 / 返程 04:30-次日 01:00」),带方向/币种/中外文混排,不做结构化拆分
+  - `lastUpdated` 数据日期、`fetchFailed` 抓取状态标记
+  - 子信息:**停靠站 stops**(有序站名列表)、**班次 schedules**(时间段/间隔/备注)、**图片 images**(URL+说明)、**文件 files**(名称+链接)、**提醒 alerts**(类型/内容/起止日期,可空表示长期)
 
-后台与审计:
-- `admin_user(id, username, password_hash, role, status, created_at)` — `role` ∈ {SUPER_ADMIN, OPERATOR};**初始 SUPER_ADMIN 由种子脚本/Flyway 写入**,不开放注册
-- `audit_log(id, admin_id, action, target_type, target_id, detail_json, ip, created_at)` — **INDEX(admin_id, created_at)、INDEX(target_type, target_id)**
+用户侧领域数据(展示/交互需要):
+- **用户**:账号、昵称、头像、语言偏好、状态。
+- **收藏(=订阅)**:用户 ↔ 线路,带「是否接收通知」开关。
+- **站内信**:类型 + 多语言模板标识 + 参数(供前端按 locale 渲染)+ 已读态 + 关联线路 + 变更 diff。
+- **建议工单 + 回复**:用户提单、状态机 `OPEN → REPLIED → CLOSED`、管理员/用户回复。
+- **匿名数据纠错上报**:不绑定用户(支持零登录)、关联线路 + 问题描述。
 
-i18n(预留,先不强制):
-- 界面文案走前端 vue-i18n JSON,不入库
-- 数据译文若将来需要:`i18n_text(id, entity_type, entity_id, field, locale, text)` 侧表,先建表不填
+后台领域数据:
+- **管理员**:账号 + 角色(SUPER_ADMIN / OPERATOR)。
+- **操作审计**:管理端写操作记录(谁/何时/改了哪个对象)。
+- **变更快照**:线路内容快照 + 结构化 diff,供推送与修订史。
+
+> **设计层约束(交实现落地,设计先定)**:线路业务键唯一且重导幂等;价格/时长等为展示文本不强拆;站内信存「模板+参数」而非定死文案(多语言);收藏与订阅合一但留通知开关;匿名上报独立于用户工单;变更快照与推送同源。
+> **多语言**:界面文案走前端 vue-i18n(不入库);巴士数据保留原文,译文若将来需要由实现层加侧表。
 
 ### 变更检测算法(content_hash —— 对抗评审 P0,这是闭环地基)
 
@@ -127,9 +124,9 @@ canonicalJson = {
 1. 管理员在后台保存某条 `bus`(含子表)→ 同一 DB 事务内写库 + 算新 `content_hash`
 2. 与旧 `content_hash` 对比;**相同则结束(无变更不发)**;不同则记 `changedFields`
 3. 用 **`@TransactionalEventListener(phase = AFTER_COMMIT)`** 发 `BusUpdatedEvent(busId, newHash, changedFields)` —— **bus 先提交,推送在提交后异步执行**
-4. 监听器(`@Async`)查 `favorite WHERE bus_id=? AND notify=1` 找订阅者,**单条批量 `INSERT message VALUES (...),(...)`**;`UNIQUE(user_id,ref_bus_id,ref_hash)` 保证幂等(至少一次 + 去重)
+4. 监听器(`@Async`)找出订阅该线路且开启通知的用户,批量写站内信;以「用户+线路+变更 hash」去重保证幂等(至少一次 + 不重复)
 5. 实时推送:见下方分期
-6. 增删场景:**新增**线路默认不推送(无人订阅);**删除**被收藏的线路 → 给订阅者发一条「该线路已下线」站内信,`favorite` 随 bus `ON DELETE CASCADE` 清理(`message` 历史保留不级联删)
+6. 增删场景:**新增**线路默认不推送(无人订阅);**删除**被收藏的线路 → 给订阅者发一条「该线路已下线」站内信,清理对应收藏,站内信历史保留
 
 > **为什么不放同一事务**(修正原稿矛盾):把「给所有订阅者写信」塞进管理员保存事务里,会让保存请求随订阅者数线性变慢、长时间持锁,且任一条 message 失败会回滚掉 bus 保存(业务上错的——该存的数据没存)。AFTER_COMMIT + 异步 + 幂等去重是正确取舍:数据落地优先,通知最终一致。
 
@@ -139,9 +136,9 @@ canonicalJson = {
 
 ### Redis 用途
 
-- 巴士查询树缓存:粗粒度单 key `bus:tree`(读多写少),**在 AFTER_COMMIT 失效**(避免事务回滚后用旧值重建脏缓存)+ TTL 兜底防失效遗漏;读路径加空值缓存防击穿
+- 巴士查询树缓存(读多写少):**在事务提交后失效**(避免回滚后用旧值重建脏缓存)+ TTL 兜底,读路径加空值缓存防击穿
 - 登录限流;短期 access token + refresh token(**不做 JWT 黑名单**——黑名单等于给无状态 JWT 引入服务端状态,矛盾)
-- 每用户未读站内信计数:**Redis 为加速缓存,MySQL `message.is_read` 为权威真相**;Redis miss 时回源 `COUNT(*) WHERE is_read=0` 重建并设 TTL;写信 `INCR`、标记已读 `DECR`,允许短暂不一致但能自愈
+- 每用户未读站内信计数:**Redis 为加速缓存,数据库为权威真相**;缓存缺失时从库重建并设 TTL;写信 +1、标记已读 -1,允许短暂不一致但能自愈
 
 ### 多语言
 
@@ -149,19 +146,19 @@ canonicalJson = {
 - 用户 `locale` 字段记住偏好;`Accept-Language` 兜底
 - 后端错误信息用 Spring `MessageSource` 国际化
 - **站内信也要多语言**:`message` 存 `template_code + params_json`(如 `BUS_UPDATED` + `{route, changed}`),前端按当前 `user.locale` 渲染。不存定死文本,否则德/英/中用户收到的通知语言无法适配
-- 数据本身先保留原文,`i18n_text` 侧表预留不实现
+- 数据本身先保留原文,译文若将来需要由实现层处理
 
 ### 边界与状态(对抗评审补全)
 
 - **空态**:搜其他国家/无机场/无巴士都会空(只有两城),前端统一空态组件;API 空结果返回空数组而非 404
-- **重复注册**:`username/email` 唯一索引冲突 → 409,前端提示
+- **重复注册**:用户名/邮箱重复 → 409,前端提示
 - **站内信生命周期**:列表分页 + 批量已读 + 可删除;订阅热门线路会持续累积,设可选保留期(如 90 天归档)
 - **登录安全**:Redis 登录限流;MVP 明确**不做**密码找回/邮箱验证(记为有意取舍,Phase 2 再加)
 - **工单状态机**:`OPEN → REPLIED → CLOSED`,CLOSED 后用户再回复重开为 OPEN
 
 ### 管理后台
 
-Element Plus + 同一前端工程内独立路由(`/admin/*`,基于 `admin_user` 角色鉴权),或单独 Vite 子应用——MVP 同仓同应用、路由分区即可,无需第二个部署。
+Element Plus + 同一前端工程内独立路由(`/admin/*`,基于管理员角色鉴权),或单独 Vite 子应用——MVP 同仓同应用、路由分区即可,无需第二个部署。
 - 用户注册情况:列表 + 注册趋势图
 - 订阅统计:按 bus/airport/city 聚合 favorite 计数
 - 巴士信息维护:树形选国家/城市/机场 → 编辑线路(保存即触发推送闭环)
@@ -196,7 +193,7 @@ Web 服务,标准部署:
 
 ## Next Steps(建议实现顺序)
 
-1. **建库 + 种子导入**:定义上述 schema,写 data.json 导入器,确认两城数据正确落库
+1. **建库 + 种子导入**:在实现环节基于「系统核心数据结构」设计 schema,写 data.json 导入器,确认两城数据正确落库
 2. **巴士查询 API + 前端三级筛选页**:打通「能查到信息」这条主线(产品的地基)
 3. **用户系统**:注册/登录(JWT)/个人中心/收藏
 4. **站内信 + 变更推送闭环**:`BusUpdatedEvent` → 订阅者 → message(先做落库 + 未读数)
@@ -221,9 +218,11 @@ Web 服务,标准部署:
 
 ### Eng 自动采纳(安全 + 正确性,P1)
 
-- **E1 乐观锁**:`bus` 加 `version INT`(已入 DDL)。两管理员同改一条 bus 防丢失更新 + hash 竞态;不匹配返回 409。
+> 注:以下含若干**schema 层细节(乐观锁列、去重键、字符集/排序、索引、迁移)**,这些随建表一并**交实现环节**;此处只保留设计层意图。
+
+- **E1 乐观锁**:并发保存同一条线路用乐观锁防丢失更新 + hash 竞态;冲突返回 409。
 - **E2 canonicalizer 契约**:content_hash 输入必须 UTF-8 字节 + Unicode NFC 归一 + trim 尾空白;null/空串统一归一为「缺失」。**导入器与运行时必须共用同一个 canonicalizer**,否则导入后第一次管理员保存必触发幻象变更。
-- **E3 投递可靠性**:`AFTER_COMMIT + @Async` 实为 at-most-once 不是 at-least-once(异步线程挂/进程崩 → 通知永久丢失无痕)。加一个 `@Scheduled` 对账兜底:周期扫「有订阅者但缺 message(ref_bus_id,ref_hash)」的 bus 回填。不上 outbox(对个人项目过度)。**注:此项前提是保留推送闭环——见门控 UC1。**
+- **E3 投递可靠性**:`AFTER_COMMIT + @Async` 实为 at-most-once 不是 at-least-once(异步线程挂/进程崩 → 通知永久丢失无痕)。加一个 `@Scheduled` 对账兜底:周期扫「有订阅者但漏发站内信」的线路回填。不上 outbox(对个人项目过度)。**注:此项前提是保留推送闭环——见门控 UC1。**
 - **E4 异步执行器**:定义有界 `ThreadPoolTaskExecutor`(CallerRuns 拒绝策略),`@Async("pushExecutor")`。不可用默认 SimpleAsyncTaskExecutor(无界线程)。
 - **E5 模块依赖规则**:所有 bus 变更走 `bus.BusCommandService.save()`(独占 hash 计算 + 事件发布),admin 调用它不重复实现;audit 用 `@Around` 切面挂标记注解,不散落手写。
 - **E6 SQL 注入**:MyBatis 一律 `#{}`;`${}` 仅用于白名单 ORDER BY 列(走枚举映射)。加 CI grep 拦 mapper XML 里的 `${`。
@@ -234,10 +233,10 @@ Web 服务,标准部署:
 - **E11 导入器不发事件**:种子导入走 `suppressEvents` 路径,避免 re-import 给已订阅用户群发幻象通知。
 - **E12 批量插入分块**:`INSERT message` 按 500 行/批迭代,防 `max_allowed_packet` 爆 + 长事务持锁。
 - **E13 Redis 未读计数**:读路径 key 缺失时只从 MySQL `COUNT(*)` 重建(绝不靠裸 INCR 播种);INCR 设为「key 存在才加」(Lua/EXISTS);TTL 强制非可选。
-- **E14 SYSTEM 消息去重洞**:`UNIQUE(user_id,ref_bus_id,ref_hash)` 中 NULL 列在 MySQL 不防重复 → 无 bus 的 SYSTEM 消息可无限重复插。给 SYSTEM 消息单独非空去重 token。
-- **E15 ref_bus_id 无 FK**:文档显式声明「有意不加 FK」(message 历史在 bus 删后保留),不是疏漏。
-- **E16 字符集/collation**:已入 DDL(JDBC 连接层 utf8mb4 + 自然键 _as_cs)。
-- **E17 images/files 先删后插**:会换 PK + 破坏单图引用。MVP 接受并记为已知限制;需要单图编辑时改按 url upsert。
+- **E14 系统消息去重**:无关联线路的系统消息需独立的非空去重标识,避免重复推送(去重键实现层落地)。
+- **E15 站内信不随线路删除而丢**:线路删除后其历史站内信有意保留。
+- **E16 字符集/排序**:统一 utf8mb4;自然键区分大小写避免误折叠(实现层细节)。
+- **E17 子表先删后插**:images/files 重存会换标识、破坏单图引用;MVP 接受并记为已知限制,需单图编辑时改按 url 合并。
 
 ### DX 自动采纳(契约 + 本地环,P1)
 
@@ -269,12 +268,12 @@ Web 服务,标准部署:
 
 ### 门控决策(已定)
 
-- **UC1 范围**:保留全部功能(账号/收藏/站内信/推送/工单/后台/多语言)。这是学习/作品项目,全栈正是练手目标,评审的「砍范围」前提(产品价值优化)不适用。**但采纳排序洞见**:先把查询主线(查询+详情)端到端跑通可部署,其余作为独立模块逐个加;DB 先建 9 张巴士表,user/message/ticket/admin/audit 随模块开工再加 migration。E3 推送兜底扫描随闭环保留。
+- **UC1 范围**:保留全部功能(账号/收藏/站内信/推送/工单/后台/多语言)。这是学习/作品项目,全栈正是练手目标,评审的「砍范围」前提(产品价值优化)不适用。**但采纳排序洞见**:先把查询主线(查询+详情)端到端跑通可部署,其余(账号/站内信/工单/后台/审计)作为独立模块逐个加。E3 推送兜底扫描随闭环保留。
 - **DS5 前端**:Element Plus 全站(一套栈、学习面单一)。**前台强制移动优先**——核心页先设计窄屏,`el-table` 移动端降级为卡片堆叠,级联选择器换全屏 picker;Element Plus 在 /admin 桌面后台是强项。
 
 ## 增强建议(brainstorming 第三轮,已采纳)
 
-四条之前评审未覆盖的增强。均为**增量**:不动已锁的 V1 巴士 9 表核心,走后续 migration / 前端配置,按价值排序逐个加。
+四条之前评审未覆盖的增强。均为**增量**:不动查询主线核心,作为独立模块按价值排序逐个加。
 
 ### EN1 SSR 首屏 + 分享卡(已降级:不追 SEO 排名)
 
@@ -290,45 +289,49 @@ Web 服务,标准部署:
 
 旅客真实意图常是「我要去 X,哪条线到?」。当前只有 国家→城市→机场 树。加**反向查找:目的地 / 站名 → 线路**。
 
-- **实现拍板(修 high,不并列)**:用导入时构建的 `bus_search(bus_id, term, kind)` 倒排表,**不用 MySQL FULLTEXT**——ngram 对中德文混排 + 短站名召回差、跨语言行为不可控。倒排表可按规则拆词(整站名 + 别名 + 拼音/首字母),前缀匹配天然适配 autocomplete,跨语言可预测。`kind ∈ {AIRPORT, DESTINATION, STOP}`。
-- **维护点(修 medium 缺口)**:`bus_search` 在 `BusCommandService.save()` **同事务先删该 bus 的 term 再插**(与子表先删后插一致);随 bus 变更失效,纳入 AFTER_COMMIT 失效清单(与 `bus:tree` 并列)。
-- **消歧(修 high)**:单框「你要去哪 / 在哪个机场?」的 autocomplete 必须**按 `kind` 分组**(机场 / 目的地 / 途经站),每条命中标类型让用户点选,不让系统猜「西站」是目的地还是途经站。
+- **方案拍板(修 high,不并列)**:用导入时构建的**倒排索引**(线路 ↔ 检索词 ↔ 类型),**不用全文检索**——分词对中德文混排 + 短站名召回差、跨语言行为不可控。倒排可按规则拆词(整站名 + 别名 + 拼音/首字母),前缀匹配天然适配 autocomplete,跨语言可预测。类型 ∈ {机场, 目的地, 途经站}。(索引的具体存储交实现)
+- **维护点(修 medium 缺口)**:倒排索引在保存线路时**同事务重建该线路的词条**(与子信息先删后插一致),随线路变更失效。
+- **消歧(修 high)**:单框「你要去哪 / 在哪个机场?」的 autocomplete 必须**按类型分组**(机场 / 目的地 / 途经站),每条命中标类型让用户点选,不让系统猜「西站」是目的地还是途经站。
 - **与 DS1 主次(修 medium)**:DS1 城市卡片直达为**主视觉**(80% 用户),反向搜索为**顶部辅助入口**;搜索结果回落到现有机场/详情路由,不做第二套并行导航。
 - 移动端:autocomplete debounce + 监听 IME composition end 再查(避免中文拼音逐字母触发)。
 
-### EN3 变更历史 `bus_revision`(让推送从噪音变信号)
+### EN3 变更历史(变更快照,让推送从噪音变信号)
 
 现在 `content_hash` 只说「变了」,推送也只说「更新了」。存快照让用户知道**变了什么**。
 
-- 新表:`bus_revision(id, bus_id, content_hash, source, snapshot_json, diff_json, created_at)`,FK→bus。
-  - **append-only 时序表,不加 `UNIQUE(bus_id, content_hash)`(修 critical)**:一条线路 A→B→A 改回旧值,旧 hash 合法地再次出现;套内容去重键会唯一键冲突丢历史。取「上一条」按 `created_at DESC, id DESC`。
-  - `source ∈ {ADMIN, IMPORT}`(修 high):导入器(E11 suppressEvents)写 `IMPORT` 基线 revision,前端时间线按 source 过滤,避免批量导入污染「更新记录」。
-  - `snapshot_json` = **E2 的 canonicalJson 全量(含子表)**(修 high),与 hash 同源不漂移。
-- **`diff_json` 存结构化 diff,不存渲染文本(修 critical,服从 D6)**:`[{field:"price", old:"€11", new:"€13"}, {field:"last_bus", old:"24:00", new:"23:30"}]`。**绝不存「价格上调」这种定死中文**——否则德语用户收到中文,违反 D6。字段名→显示文案走 vue-i18n(`field.price`/`field.last_bus`),字段值保留原文(premise 5)。子表(stops/schedules/alerts)diff 按业务键对齐(非逐行)。
-- **时序(修 medium)**:revision + diff 在 `BusCommandService.save()` **同事务**算并写(顺手用已算的新旧 hash);`BusUpdatedEvent` 携带 `diff_json`,异步监听器只读不算。
-- 推送:`message.params_json` 带 `diff_json`;同步扩展 D6 的 `BUS_UPDATED.params` 注册表(diff 数组 schema + 未知字段兜底)。站内信前端按 locale 渲染「价格 €11→€13」。
-- **前端线路详情「更新记录」时间线(门控 D-EN3 已定:保留)**:渲染同一份 `diff_json`,按当前 locale 翻译字段名。
-- **与 audit_log 划界(修 medium 重复)**:`audit_log` = 操作维度(谁/何时/改了哪个 target,合规追责);`bus_revision` = 内容维度(快照 + diff,供推送/时间线)。后台修订史用 revision。
+- **变更快照**:每次有意义变更落一条记录,含 内容 hash + 全量快照 + 结构化 diff + 来源 + 时间。
+  - **append-only 时序记录(修 critical)**:一条线路 A→B→A 改回旧值,旧 hash 合法地再次出现 → **不能**对(线路+hash)做去重键,否则冲突丢历史;取「上一条」按时间倒序。
+  - **来源 ∈ {ADMIN, IMPORT}**(修 high):导入(E11 suppressEvents)写 `IMPORT` 基线,前端时间线按来源过滤,避免批量导入污染「更新记录」。
+  - 快照 = **E2 的 canonicalJson 全量(含子信息)**(修 high),与 hash 同源不漂移。
+- **结构化 diff,不存渲染文本(修 critical,服从 D6)**:形如 `[{field:"price", old:"€11", new:"€13"}, {field:"last_bus", old:"24:00", new:"23:30"}]`。**绝不存「价格上调」这种定死中文**——否则德语用户收到中文,违反 D6。字段名→显示文案走 vue-i18n,字段值保留原文(premise 5)。子信息(stops/schedules/alerts)diff 按业务键对齐(非逐行)。
+- **时序(修 medium)**:快照 + diff 在保存线路时**同事务**算并写;变更事件携带 diff,异步监听器只读不算。
+- 推送:站内信参数带上 diff;同步扩展 D6 的 `BUS_UPDATED` 参数注册表(diff 数组 + 未知字段兜底)。站内信前端按 locale 渲染「价格 €11→€13」。
+- **前端线路详情「更新记录」时间线(门控 D-EN3 已定:保留)**:渲染同一份 diff,按当前 locale 翻译字段名。
+- **与操作审计划界(修 medium 重复)**:操作审计 = 操作维度(谁/何时/改了哪个对象,合规追责);变更快照 = 内容维度(快照 + diff,供推送/时间线)。后台修订史用变更快照。
 
 ### EN4 PWA + 数据可信度(贴合真实场景)
 
 - **PWA(修 high 语义冲突)**:`vite-plugin-pwa`,缓存最近看过的线路 + 可装桌面。但离线展示的是缓存旧值,而闭环会推「已更新」——屏幕与通知互相打脸,赶车场景下危险。修法:
-  - 每条缓存线路记下当时 `content_hash` + `cached_at`;命中走 **stale-while-revalidate**,联网后比对 hash,不一致则**显著标注「离线缓存,数据已更新,联网查看最新」**,绝不静默把旧值当真值。
-  - 离线时**压制精确「N 天前核对」**(该字段也是缓存的旧值,算出来偏乐观),改显示 `cached_at`「缓存于 X」。区分两个时间轴:`last_verified`(数据核对)vs `cached_at`(本地缓存)。
-- **数据可信度**:`bus` 加 `last_verified DATE`。
-  - **谁更新(修 high)**:**手动「核对无误」动作**(单独按钮/接口,写 `audit_log`),语义=人工确认仍准确,与「改动」(`updated_at`)正交。**三个时间字段语义须写清**:`last_updated`(data.json 数据日期)/ `updated_at`(行更新时间)/ `last_verified`(人工核对时间)。
+  - 每条缓存线路记下当时的 内容 hash + 缓存时间;命中走 **stale-while-revalidate**,联网后比对 hash,不一致则**显著标注「离线缓存,数据已更新,联网查看最新」**,绝不静默把旧值当真值。
+  - 离线时**压制精确「N 天前核对」**(该值也是缓存的旧值,算出来偏乐观),改显示「缓存于 X」。区分两个时间轴:数据核对时间 vs 本地缓存时间。
+- **数据可信度**:线路加「最后核对时间」。
+  - **谁更新(修 high)**:**手动「核对无误」动作**(单独操作,写审计),语义=人工确认仍准确,与「改动时间」正交。**三个时间语义须写清**:数据日期(来自 data.json)/ 行更新时间 / 人工核对时间。
   - **显示分档非裸天数(修 high)**:<14 天绿色「近期已核对」;14-60 天中性不显数字;>60 天「可能已过期,请以官方为准」+ 官网链接。裸显「N 天前」对会腐烂的数据是减信。
-- **匿名上报(修 critical,与 DS4 冲突)**:`ticket.user_id` 非空 + 零登录,匿名旅客(95%)提不了工单 → 这个闭环本来是断的。修:新建轻量 **`data_report(id, bus_id, issue_text, contact_optional, status, created_at)`**,**不挂 user**,匿名一键即可上报,管理员后台处理。登录用户走工单,匿名走 data_report。`bus_id` 有意不加 FK(同 E15,bus 删了报告仍在)。这才让「手工数据必腐烂 → 众包纠错」闭环对匿名旅客真正成立。
+- **匿名上报(修 critical,与 DS4 冲突)**:工单绑定用户 + 零登录,匿名旅客(95%)提不了工单 → 这个闭环本来是断的。修:**匿名数据纠错上报独立于用户工单**(线路 + 问题描述 + 可选联系方式 + 状态,不绑定用户),匿名一键即可上报,管理员后台处理;登录用户仍可走工单。这才让「手工数据必腐烂 → 众包纠错」闭环对匿名旅客真正成立。(具体存储交实现)
 
 ### 增强项排序建议
 
 EN1(SSR/分享卡)与 EN2(反向检索)归入查询主线打磨,**紧跟查询页之后**做;EN3(变更历史)随推送闭环一起做(它让闭环真正有意义);EN4 PWA 收尾打磨期,数据可信度/匿名上报随工单模块。
 
-> **第三轮评审(2 agent 聚焦评 EN1-EN4)已修**:四节初版是「方向对的草图」(Eng 4.5、Design/DX 4)。已修 4 个 critical——EN3 去掉内容去重唯一键改 append-only、EN3 改结构化 diff 服从 D6、EN1 SSG 只从 MySQL 拉且降级不追 SEO、EN4 匿名走 `data_report` 不挂 user;及多个 high(倒排表拍板、last_verified 语义/分档、PWA hash 感知、Element Plus SSR 取舍)。门控两决:EN1 降级、EN3 保留旅客时间线。
+> **第三轮评审(2 agent 聚焦评 EN1-EN4)已修**:四节初版是「方向对的草图」(Eng 4.5、Design/DX 4)。已修 4 个 critical——EN3 去掉内容去重唯一键改 append-only、EN3 改结构化 diff 服从 D6、EN1 SSG 只从 MySQL 拉且降级不追 SEO、EN4 匿名上报独立于用户工单;及多个 high(倒排表拍板、last_verified 语义/分档、PWA hash 感知、Element Plus SSR 取舍)。门控两决:EN1 降级、EN3 保留旅客时间线。
 
 ## The Assignment
 
-在写任何业务代码之前,先做**第 1 步**:把上面已经定死自然键、唯一索引、外键、字段类型、`version` 乐观锁的 schema 落成最终 MySQL 建表 DDL(Flyway),并写出**幂等**种子导入器——以 `bus.source_id`、`country.code`、`(country_id, name)` 做 upsert,**且导入器与运行时共用同一个 canonicalizer**(E2),重跑两次结果一致。**但**(见门控 UC1)先只锁巴士查询那 9 张表 + 跑通查询主线,user/message/ticket/admin/audit 待对应模块开工再加 migration。**并在写第一个 controller 前先定 API 契约 + 错误包络(D1/D2)**——这是前后端能并行的前提。
+本文档到此是**纯设计层产物,不含数据库 schema**——建表、字段类型、索引、外键、迁移全部留给实现环节。进入实现的第 1 步:
+
+1. **设计具体 schema + 幂等导入器**:基于上面「系统核心数据结构」落地表结构,写幂等种子导入器(以线路业务键 / 国家码 / (国家,城市名) 做 upsert,重跑两次结果一致;**导入器与运行时共用同一个 canonicalizer**,见 E2)。
+2. **先跑通查询主线**:巴士查询 + 详情端到端可部署;账号/站内信/工单/后台/审计随对应模块逐个加(见门控 UC1)。
+3. **写第一个 controller 前先定 API 契约 + 错误包络(D1/D2)**——这是前后端能并行的前提。
 
 ## What I noticed about how you think
 
