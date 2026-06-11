@@ -276,38 +276,55 @@ Web 服务,标准部署:
 
 四条之前评审未覆盖的增强。均为**增量**:不动已锁的 V1 巴士 9 表核心,走后续 migration / 前端配置,按价值排序逐个加。
 
-### EN1 可发现性 / SEO(战略价值最高)
+### EN1 SSR 首屏 + 分享卡(已降级:不追 SEO 排名)
 
-公开信息站若 Google 搜不到等于不存在;Vue SPA 对爬虫渲染空白页。**公开前台用 SSG/预渲染**(`vite-ssg` 或迁到 Nuxt),为每条线路生成可爬取静态页(`/bus/vie-vab1` 维度的 URL,用 `source_id` 不用自增 id),目标命中长尾查询(「VIE 机场 巴士 西站 价格」「浦东机场大巴时刻」)。
+> **门控 D-EN1 已定(User Challenge)**:两城、手工维护、会过时的数据做 SEO 获客是伪命题(Google 判 thin content),且把过时班次推到搜索顶部对赶车旅客有害,还和 EN4「数据会腐烂」自相矛盾。**目标降级为:首屏渲染性能 + OG 社交分享卡,不追搜索排名。**
 
-- 与 DS5 兼容:SSG 仍是 Vue,前台移动优先不变;`/admin` 后台保持 SPA(无需 SEO)。
-- 与 D1 兼容:静态页构建时拉 API/直接读 data.json 预渲染;运行时动态数据(收藏态)再 hydrate。
-- 配套:`<title>`/`<meta>`/OpenGraph/JSON-LD 结构化数据(`PublicTransport` schema.org),sitemap.xml。
+- **`vite-ssg` 预渲染**公开线路页(`/bus/{source_id}`),好处是首屏不空白、分享到微信/Twitter 有 OG 卡。**不迁 Nuxt**(换框架不是增量)。
+- **数据源拍板(修 critical)**:SSG 构建时**只从 API/MySQL 拉**,**绝不读 data.json**——data.json 仅首次种子,管理员改的是 MySQL,读种子必漂移。
+- **静态 vs 水合分层**(复用 DS2 信息优先级):静态进 HTML = route/destination/operator/官网链接/JSON-LD 骨架;**易变字段(price/schedule/alert)+ 收藏态 + last_verified 运行时从 API 水合**——这样静态页无需频繁重建,也不会展示过时价格。
+- **Element Plus × SSR(修 high,与 DS5 张力)**:重组件库 SSR 兼容性差、首屏 JS 大。公开 SEO 页尽量用语义化 HTML + 轻样式,Element Plus 重组件留给 `/admin` 与登录后交互区;开工前先做 vite-ssg + Element Plus 关键组件的 hydration PoC。
+- 多语言:不追排名,故不强求 hreflang/sitemap 全套;OG 卡按 locale 出即可。
 
 ### EN2 反向检索(贴合旅客意图)
 
 旅客真实意图常是「我要去 X,哪条线到?」。当前只有 国家→城市→机场 树。加**反向查找:目的地 / 站名 → 线路**。
 
-- 实现:MySQL `FULLTEXT` 索引(需 ngram parser 支持中文分词)覆盖 `bus.destination` + `bus_stop.name`;或导入时建一张去重的 `bus_search(bus_id, term)` 倒排表,前端 autocomplete。
-- 首屏搜索框「你要去哪 / 在哪个机场?」一个入口同时支持正向(机场)和反向(目的地/站)。
+- **实现拍板(修 high,不并列)**:用导入时构建的 `bus_search(bus_id, term, kind)` 倒排表,**不用 MySQL FULLTEXT**——ngram 对中德文混排 + 短站名召回差、跨语言行为不可控。倒排表可按规则拆词(整站名 + 别名 + 拼音/首字母),前缀匹配天然适配 autocomplete,跨语言可预测。`kind ∈ {AIRPORT, DESTINATION, STOP}`。
+- **维护点(修 medium 缺口)**:`bus_search` 在 `BusCommandService.save()` **同事务先删该 bus 的 term 再插**(与子表先删后插一致);随 bus 变更失效,纳入 AFTER_COMMIT 失效清单(与 `bus:tree` 并列)。
+- **消歧(修 high)**:单框「你要去哪 / 在哪个机场?」的 autocomplete 必须**按 `kind` 分组**(机场 / 目的地 / 途经站),每条命中标类型让用户点选,不让系统猜「西站」是目的地还是途经站。
+- **与 DS1 主次(修 medium)**:DS1 城市卡片直达为**主视觉**(80% 用户),反向搜索为**顶部辅助入口**;搜索结果回落到现有机场/详情路由,不做第二套并行导航。
+- 移动端:autocomplete debounce + 监听 IME composition end 再查(避免中文拼音逐字母触发)。
 
 ### EN3 变更历史 `bus_revision`(让推送从噪音变信号)
 
 现在 `content_hash` 只说「变了」,推送也只说「更新了」。存快照让用户知道**变了什么**。
 
-- 新表:`bus_revision(id, bus_id, content_hash, snapshot_json, changed_summary, created_at)`,FK→bus;**UNIQUE(bus_id, content_hash)**。
-- 每次 hash 变化时落一条 revision,与上一条 `snapshot_json` 做 diff 算 `changed_summary`(如「price: €11→€13」「末班车 24:00→23:30」)。
-- 推送 `message.params_json` 带上 diff,站内信显示「价格上调」而非泛泛「已更新」。复用现有 hash 基础设施,是闭环最值的升级。
-- 前端线路详情可加「更新记录」时间线。
+- 新表:`bus_revision(id, bus_id, content_hash, source, snapshot_json, diff_json, created_at)`,FK→bus。
+  - **append-only 时序表,不加 `UNIQUE(bus_id, content_hash)`(修 critical)**:一条线路 A→B→A 改回旧值,旧 hash 合法地再次出现;套内容去重键会唯一键冲突丢历史。取「上一条」按 `created_at DESC, id DESC`。
+  - `source ∈ {ADMIN, IMPORT}`(修 high):导入器(E11 suppressEvents)写 `IMPORT` 基线 revision,前端时间线按 source 过滤,避免批量导入污染「更新记录」。
+  - `snapshot_json` = **E2 的 canonicalJson 全量(含子表)**(修 high),与 hash 同源不漂移。
+- **`diff_json` 存结构化 diff,不存渲染文本(修 critical,服从 D6)**:`[{field:"price", old:"€11", new:"€13"}, {field:"last_bus", old:"24:00", new:"23:30"}]`。**绝不存「价格上调」这种定死中文**——否则德语用户收到中文,违反 D6。字段名→显示文案走 vue-i18n(`field.price`/`field.last_bus`),字段值保留原文(premise 5)。子表(stops/schedules/alerts)diff 按业务键对齐(非逐行)。
+- **时序(修 medium)**:revision + diff 在 `BusCommandService.save()` **同事务**算并写(顺手用已算的新旧 hash);`BusUpdatedEvent` 携带 `diff_json`,异步监听器只读不算。
+- 推送:`message.params_json` 带 `diff_json`;同步扩展 D6 的 `BUS_UPDATED.params` 注册表(diff 数组 schema + 未知字段兜底)。站内信前端按 locale 渲染「价格 €11→€13」。
+- **前端线路详情「更新记录」时间线(门控 D-EN3 已定:保留)**:渲染同一份 `diff_json`,按当前 locale 翻译字段名。
+- **与 audit_log 划界(修 medium 重复)**:`audit_log` = 操作维度(谁/何时/改了哪个 target,合规追责);`bus_revision` = 内容维度(快照 + diff,供推送/时间线)。后台修订史用 revision。
 
 ### EN4 PWA + 数据可信度(贴合真实场景)
 
-- **PWA**:`vite-plugin-pwa`,缓存最近看过的线路 + 可装桌面。旅客在机场弱网/无网时仍能看上次查的车。
-- **数据可信度**:`bus` 加 `last_verified DATE`,前端每条线路显示「数据核对于 N 天前」(超过阈值灰色提示「可能过时」)。加一键「信息有误/已过期」→ 自动建 `ticket`(`type=DATA_ISSUE`,关联 `bus_id`)。把用户(发现腐烂)和管理员(去修)用现有工单系统接成闭环,直击「手工维护数据必腐烂」的核心风险。
+- **PWA(修 high 语义冲突)**:`vite-plugin-pwa`,缓存最近看过的线路 + 可装桌面。但离线展示的是缓存旧值,而闭环会推「已更新」——屏幕与通知互相打脸,赶车场景下危险。修法:
+  - 每条缓存线路记下当时 `content_hash` + `cached_at`;命中走 **stale-while-revalidate**,联网后比对 hash,不一致则**显著标注「离线缓存,数据已更新,联网查看最新」**,绝不静默把旧值当真值。
+  - 离线时**压制精确「N 天前核对」**(该字段也是缓存的旧值,算出来偏乐观),改显示 `cached_at`「缓存于 X」。区分两个时间轴:`last_verified`(数据核对)vs `cached_at`(本地缓存)。
+- **数据可信度**:`bus` 加 `last_verified DATE`。
+  - **谁更新(修 high)**:**手动「核对无误」动作**(单独按钮/接口,写 `audit_log`),语义=人工确认仍准确,与「改动」(`updated_at`)正交。**三个时间字段语义须写清**:`last_updated`(data.json 数据日期)/ `updated_at`(行更新时间)/ `last_verified`(人工核对时间)。
+  - **显示分档非裸天数(修 high)**:<14 天绿色「近期已核对」;14-60 天中性不显数字;>60 天「可能已过期,请以官方为准」+ 官网链接。裸显「N 天前」对会腐烂的数据是减信。
+- **匿名上报(修 critical,与 DS4 冲突)**:`ticket.user_id` 非空 + 零登录,匿名旅客(95%)提不了工单 → 这个闭环本来是断的。修:新建轻量 **`data_report(id, bus_id, issue_text, contact_optional, status, created_at)`**,**不挂 user**,匿名一键即可上报,管理员后台处理。登录用户走工单,匿名走 data_report。`bus_id` 有意不加 FK(同 E15,bus 删了报告仍在)。这才让「手工数据必腐烂 → 众包纠错」闭环对匿名旅客真正成立。
 
 ### 增强项排序建议
 
-EN1(SEO)与 EN2(反向检索)归入查询主线打磨,**紧跟查询页之后**做;EN3(变更历史)随推送闭环一起做(它让闭环真正有意义);EN4 PWA 收尾打磨期,数据可信度随工单模块。
+EN1(SSR/分享卡)与 EN2(反向检索)归入查询主线打磨,**紧跟查询页之后**做;EN3(变更历史)随推送闭环一起做(它让闭环真正有意义);EN4 PWA 收尾打磨期,数据可信度/匿名上报随工单模块。
+
+> **第三轮评审(2 agent 聚焦评 EN1-EN4)已修**:四节初版是「方向对的草图」(Eng 4.5、Design/DX 4)。已修 4 个 critical——EN3 去掉内容去重唯一键改 append-only、EN3 改结构化 diff 服从 D6、EN1 SSG 只从 MySQL 拉且降级不追 SEO、EN4 匿名走 `data_report` 不挂 user;及多个 high(倒排表拍板、last_verified 语义/分档、PWA hash 感知、Element Plus SSR 取舍)。门控两决:EN1 降级、EN3 保留旅客时间线。
 
 ## The Assignment
 
