@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>机场巴士信息 · Airport Bus Info</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__in">
+      <a class="brand" href="home.html"><span class="glyph">B</span> 机场巴士信息</a>
+      <div class="actions">
+        <div class="lang" role="group" aria-label="语言">
+          <button aria-pressed="true">中文</button>
+          <button aria-pressed="false">EN</button>
+          <button aria-pressed="false">DE</button>
+        </div>
+        <a class="btn btn-ghost btn-sm" href="login.html">登录 / 注册</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- header -->
+    <section class="header reveal d1">
+      <div class="kicker">Airport Ground Transport</div>
+      <h1 class="title">机场巴士信息</h1>
+      <p class="sub">搜索机场,或依次选择国家、城市与机场,查看线路途经站点、分时段班次、票价与临时通知。无需登录即可查询。</p>
+    </section>
+
+    <!-- reverse search (EN2) -->
+    <div class="searchWrap reveal d2">
+      <span class="searchIcon">⌕</span>
+      <input class="search" type="text" placeholder="搜索目的地 / 站名 / 机场,如 浦东 · PVG · Westbahnhof" />
+      <!-- demo: 类型分组提示 -->
+      <div class="suggest" style="display:none">
+        <div class="suggestItem"><span class="suggestCode">VIE</span> 维也纳国际机场 <span class="suggestType">机场</span></div>
+        <div class="suggestItem"><span class="suggestCode">→</span> 维也纳西站 Westbahnhof <span class="suggestType">目的地</span></div>
+      </div>
+    </div>
+
+    <!-- country / city / airport selector -->
+    <section class="selector reveal d2">
+      <div class="field">
+        <label>国家 / Country</label>
+        <select><option>奥地利</option><option>中国</option></select>
+      </div>
+      <div class="field">
+        <label>城市 / City</label>
+        <select><option>维也纳</option></select>
+      </div>
+      <div class="field">
+        <label>机场 / Airport</label>
+        <select><option>维也纳国际机场 (VIE)</option></select>
+      </div>
+    </section>
+
+    <!-- results -->
+    <section class="results reveal d3">
+      <div class="placeHead">
+        <h2>维也纳国际机场</h2>
+        <span class="iata">VIE</span>
+        <a href="#">官网 ↗</a>
+      </div>
+      <p class="count">共 3 条巴士线路 · 选择一条查看</p>
+
+      <!-- 线路单选:点一条查询 -->
+      <div class="routePick">
+        <label><input type="radio" name="route" checked /> VAB 1 → 西站</label>
+        <label><input type="radio" name="route" /> VAB 2 → Schwedenplatz</label>
+        <label><input type="radio" name="route" /> VAB 3 → Donauzentrum</label>
+      </div>
+
+      <!-- 选中线路的卡片(VAB 1) -->
+      <article class="card">
+        <div class="card__top">
+          <div>
+            <div class="route">VAB 1</div>
+            <div class="dest">维也纳西站 Westbahnhof</div>
+            <div class="operator">Vienna Airport Bus (ÖBB Postbus)</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:12px">
+            <button class="favbtn" onclick="this.classList.toggle('active');this.lastChild.textContent=this.classList.contains('active')?' 已收藏':' 收藏'"><svg viewBox="0 0 24 24"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg> 收藏</button>
+            <div class="price">全价单程 €11<small>往返 €20</small></div>
+          </div>
+        </div>
+
+        <!-- 双向:时长 / 运营 / 班次(从机场出发 / 到达机场) -->
+        <div class="dirs">
+          <div class="dir">
+            <div class="dirHead">🛬 到达机场 <small>进城 City → Airport</small></div>
+            <div class="dirMeta">
+              <div><span class="metaLabel">时长</span><span class="metaVal">约 40 分钟</span></div>
+              <div><span class="metaLabel">运营</span><span class="metaVal">03:00–24:00</span></div>
+            </div>
+            <table class="schedTable">
+              <tr><td class="schedTime">全天</td><td class="schedInterval">每 30 分钟</td><td class="schedNote">固定班距</td></tr>
+            </table>
+          </div>
+          <div class="dir">
+            <div class="dirHead">🛫 从机场出发 <small>Airport → City</small></div>
+            <div class="dirMeta">
+              <div><span class="metaLabel">时长</span><span class="metaVal">约 40 分钟</span></div>
+              <div><span class="metaLabel">运营</span><span class="metaVal">04:30–次日 01:00</span></div>
+            </div>
+            <table class="schedTable">
+              <tr><td class="schedTime">全天</td><td class="schedInterval">每 30 分钟</td><td class="schedNote">固定班距</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="secLabel">途经站点</div>
+          <div class="stops">
+            <div class="stopRow"><span class="stopDot"></span><span class="stopName">维也纳西站 Westbahnhof</span></div>
+            <div class="stopLine"></div>
+            <div class="stopRow"><span class="stopDot"></span><span class="stopName">维也纳中央车站 Hauptbahnhof (南入口)</span></div>
+            <div class="stopLine"></div>
+            <div class="stopRow"><span class="stopDot stopDotEnd"></span><span class="stopNameEnd">维也纳机场</span></div>
+          </div>
+        </div>
+
+        <div class="alert alertInfo">
+          <span class="alertIcon">ℹ️</span>
+          <div class="alertBody">
+            <span class="alertType">提醒</span>2026 年 5 月 1 日至 6 月 30 日,Klimaticket 用户享全价 35% 折扣
+            <span class="alertDate">2026-05-01 → 2026-06-30</span>
+          </div>
+        </div>
+
+        <div class="media">
+          <img class="thumb" src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=400" alt="Vienna Airport Bus" />
+          <div class="files">
+            <a class="fileLink" href="#">📄 VAB 1 官方时刻表 PDF</a>
+          </div>
+        </div>
+
+        <div class="updated">
+          <span class="chip ok"><span class="d"></span> 近期已核对</span>
+          <span>数据最后更新 2026-06-03 · <a class="detailLink" href="bus-detail.html">查询详情 →</a></span>
+        </div>
+      </article>
+    </section>
+
+    <footer class="footer">// 数据源:各机场及巴士运营商官网 · 仅供参考,以现场为准 · 当前仅覆盖维也纳、上海两城</footer>
+  </main>
+
+  <script>
+    document.querySelectorAll('.lang button').forEach((b) => {
+      b.addEventListener('click', () => {
+        document.querySelectorAll('.lang button').forEach((x) => x.setAttribute('aria-pressed', 'false'));
+        b.setAttribute('aria-pressed', 'true');
+      });
+    });
+  </script>
+</body>
+</html>

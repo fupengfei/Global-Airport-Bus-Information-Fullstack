@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>状态样张 · 加载 / 空态 / 抓取失败</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__in">
+      <a class="brand" href="home.html"><span class="glyph">B</span> 机场巴士信息</a>
+      <div class="lang" role="group" aria-label="语言">
+        <button aria-pressed="true">中文</button>
+        <button aria-pressed="false">EN</button>
+        <button aria-pressed="false">DE</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="header">
+      <div class="kicker">Design States · DS3</div>
+      <h1 class="title">状态样张<span class="dot">.</span></h1>
+      <p class="sub">查询主线的非内容态:加载骨架屏、空态(仅覆盖两城)、抓取失败。给计划里的 StateBlock 一个视觉目标。</p>
+    </section>
+
+    <!-- 1. LOADING SKELETON -->
+    <div class="kicker" style="margin:30px 0 12px">// 加载中 · Loading skeleton</div>
+
+    <!-- selector skeleton -->
+    <div class="selector" style="margin-bottom:18px">
+      <div class="field"><div class="skel skelLine" style="width:60%"></div><div class="skel" style="height:46px"></div></div>
+      <div class="field"><div class="skel skelLine" style="width:55%"></div><div class="skel" style="height:46px"></div></div>
+      <div class="field"><div class="skel skelLine" style="width:65%"></div><div class="skel" style="height:46px"></div></div>
+    </div>
+
+    <!-- card skeleton — mirrors the real card (card__top → .dirs → .section)
+         so there's no layout shift when content replaces it -->
+    <div class="skelCard">
+      <div class="card__top">
+        <div style="flex:1">
+          <div class="skel skelLine" style="width:54px;height:11px"></div>
+          <div class="skel" style="width:62%;height:20px;margin:8px 0"></div>
+          <div class="skel skelLine" style="width:40%"></div>
+        </div>
+        <div class="skel" style="width:96px;height:40px;border-radius:8px"></div>
+      </div>
+      <div class="dirs">
+        <div class="dir">
+          <div class="skel skelLine" style="width:52%;height:12px"></div>
+          <div class="skel skelLine" style="width:72%;margin-top:12px"></div>
+          <div class="skel skelLine" style="width:60%"></div>
+        </div>
+        <div class="dir">
+          <div class="skel skelLine" style="width:52%;height:12px"></div>
+          <div class="skel skelLine" style="width:72%;margin-top:12px"></div>
+          <div class="skel skelLine" style="width:60%"></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="skel skelLine" style="width:80px;height:10px"></div>
+        <div class="skel skelLine" style="width:55%;margin-top:10px"></div>
+        <div class="skel skelLine" style="width:45%"></div>
+      </div>
+    </div>
+    <div class="skelCard">
+      <div class="card__top">
+        <div style="flex:1">
+          <div class="skel skelLine" style="width:54px;height:11px"></div>
+          <div class="skel" style="width:50%;height:20px;margin:8px 0"></div>
+          <div class="skel skelLine" style="width:36%"></div>
+        </div>
+        <div class="skel" style="width:80px;height:40px;border-radius:8px"></div>
+      </div>
+      <div class="dirs">
+        <div class="dir">
+          <div class="skel skelLine" style="width:52%;height:12px"></div>
+          <div class="skel skelLine" style="width:68%;margin-top:12px"></div>
+        </div>
+        <div class="dir">
+          <div class="skel skelLine" style="width:52%;height:12px"></div>
+          <div class="skel skelLine" style="width:68%;margin-top:12px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. EMPTY STATE -->
+    <div class="kicker" style="margin:40px 0 12px">// 空态 · Empty</div>
+    <div class="empty">
+      <div class="emptyIcon">🚌</div>
+      <h3>这里还没有线路</h3>
+      <p>当前仅覆盖<strong>维也纳</strong>与<strong>上海</strong>两座城市。换个机场,或在上方选择已覆盖的城市试试。</p>
+    </div>
+
+    <!-- 3. FETCH-FAILED CARD -->
+    <div class="kicker" style="margin:40px 0 12px">// 抓取失败 · Stale data</div>
+    <article class="card">
+      <div class="card__top">
+        <div>
+          <div class="route">CAT</div>
+          <div class="dest">维也纳米特站 Wien Mitte</div>
+          <div class="operator">City Airport Train · 直达</div>
+        </div>
+        <div class="price">单程 €14.90</div>
+      </div>
+      <div class="dirs">
+        <div class="dir">
+          <div class="dirHead">🛬 到达机场 <small>进城 City → Airport</small></div>
+          <div class="dirMeta">
+            <div><span class="metaLabel">时长</span><span class="metaVal">16 分钟</span></div>
+            <div><span class="metaLabel">运营</span><span class="metaVal">06:00–23:00</span></div>
+          </div>
+        </div>
+        <div class="dir">
+          <div class="dirHead">🛫 从机场出发 <small>Airport → City</small></div>
+          <div class="dirMeta">
+            <div><span class="metaLabel">时长</span><span class="metaVal">16 分钟</span></div>
+            <div><span class="metaLabel">运营</span><span class="metaVal">05:36–23:30</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="alert">
+        <span class="alertIcon">⚠️</span>
+        <div class="alertBody">
+          <span class="alertType">注意</span>该线路最近一次自动抓取失败,信息可能已过期,请以官方为准。
+        </div>
+      </div>
+      <div class="updated">
+        <span class="chip warn"><span class="d"></span> 抓取失败,可能过期</span>
+        <span>数据最后更新 2026-03-12</span>
+      </div>
+    </article>
+
+    <footer class="footer">// 状态样张 · 高保真设计稿(mock 数据)</footer>
+  </main>
+
+  <script>
+    document.querySelectorAll('.lang button').forEach((b) => {
+      b.addEventListener('click', () => {
+        document.querySelectorAll('.lang button').forEach((x) => x.setAttribute('aria-pressed', 'false'));
+        b.setAttribute('aria-pressed', 'true');
+      });
+    });
+  </script>
+</body>
+</html>

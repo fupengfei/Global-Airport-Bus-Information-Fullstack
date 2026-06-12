@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>管理后台 · 机场巴士信息</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__in">
+      <a class="brand" href="home.html"><span class="glyph">B</span> 机场巴士信息 · 后台</a>
+      <div class="actions">
+        <span class="formNote" style="margin:0">admin · SUPER_ADMIN</span>
+        <a class="avatar" href="#" style="background:var(--accent)">管</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="adminWrap">
+    <!-- sidebar -->
+    <nav class="adminNav">
+      <div class="role">Admin · 控制台</div>
+      <a href="#dash" class="active">📊 概览</a>
+      <a href="#subs">⭐ 订阅统计</a>
+      <a href="#bus">🚌 巴士维护</a>
+      <a href="#reports">📨 纠错上报</a>
+      <a href="#audit">🧾 操作记录</a>
+    </nav>
+
+    <!-- main -->
+    <main class="adminMain">
+      <!-- 概览:用户统计 -->
+      <h1 class="pageH2" id="dash" style="margin-top:0">概览</h1>
+      <p class="pageDesc">用户注册与活跃概况。</p>
+      <div class="statCards">
+        <div class="stat"><div class="k">总用户</div><div class="v">1,284</div><div class="t">+42 本周</div></div>
+        <div class="stat"><div class="k">本周新增</div><div class="v">42</div><div class="t">+12% 环比</div></div>
+        <div class="stat"><div class="k">收藏(订阅)</div><div class="v">3,907</div><div class="t">+118 本周</div></div>
+        <div class="stat"><div class="k">待处理工单</div><div class="v">6</div></div>
+      </div>
+
+      <div class="panel">
+        <h3>注册趋势 · 近 7 天</h3>
+        <div class="bars">
+          <div class="bar" style="height:40%"><span>18</span></div>
+          <div class="bar" style="height:55%"><span>25</span></div>
+          <div class="bar" style="height:35%"><span>16</span></div>
+          <div class="bar" style="height:70%"><span>32</span></div>
+          <div class="bar" style="height:60%"><span>28</span></div>
+          <div class="bar" style="height:85%"><span>39</span></div>
+          <div class="bar" style="height:95%"><span>42</span></div>
+        </div>
+        <div class="barLbls"><span>周一</span><span>周二</span><span>周三</span><span>周四</span><span>周五</span><span>周六</span><span>周日</span></div>
+      </div>
+
+      <!-- 订阅统计 -->
+      <h2 class="pageH2" id="subs">订阅统计</h2>
+      <p class="pageDesc">按线路 / 机场 / 城市聚合收藏(favorite)计数。</p>
+      <div class="panel">
+        <h3>最受关注的线路</h3>
+        <table class="table">
+          <thead><tr><th>线路</th><th>机场</th><th>城市</th><th>收藏数</th><th>开启通知</th></tr></thead>
+          <tbody>
+            <tr><td>VAB 1 → 西站</td><td class="mono">VIE</td><td>维也纳</td><td>612</td><td>540</td></tr>
+            <tr><td>机场四线 → 上海站</td><td class="mono">PVG</td><td>上海</td><td>489</td><td>431</td></tr>
+            <tr><td>CAT → Wien Mitte</td><td class="mono">VIE</td><td>维也纳</td><td>377</td><td>298</td></tr>
+            <tr><td>机场七线 → 上海南站</td><td class="mono">PVG</td><td>上海</td><td>205</td><td>170</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 巴士维护 -->
+      <h2 class="pageH2" id="bus">巴士信息维护</h2>
+      <p class="pageDesc">树形选 国家 / 城市 / 机场 → 编辑线路。<strong>保存即触发变更检测与推送闭环</strong>(content_hash 无变化则不推送)。</p>
+      <div style="display:grid;grid-template-columns:260px 1fr;gap:18px">
+        <div class="panel" style="margin:0">
+          <div class="tree">
+            <details open>
+              <summary>🇦🇹 奥地利</summary>
+              <details open>
+                <summary>维也纳</summary>
+                <details open>
+                  <summary>维也纳国际机场 (VIE)</summary>
+                  <div class="leaf"><span>VAB 1 → 西站</span><a href="#edit">编辑</a></div>
+                  <div class="leaf"><span>VAB 2 → Schwedenplatz</span><a href="#edit">编辑</a></div>
+                  <div class="leaf"><span>VAB 3 → Donauzentrum</span><a href="#edit">编辑</a></div>
+                </details>
+              </details>
+            </details>
+            <details>
+              <summary>🇨🇳 中国</summary>
+              <details><summary>上海</summary>
+                <div class="leaf"><span>浦东 PVG · 4 条</span><a href="#edit">展开</a></div>
+                <div class="leaf"><span>虹桥 SHA · 4 条</span><a href="#edit">展开</a></div>
+              </details>
+            </details>
+          </div>
+        </div>
+
+        <div class="panel" id="edit" style="margin:0">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <h3 style="margin:0">编辑线路 · VAB 1</h3>
+            <span class="formNote" style="margin:0">版本 v7 · 乐观锁(冲突 409)</span>
+          </div>
+          <div class="formrow"><label>线路名 route</label><input class="input" value="VAB 1" /></div>
+          <div class="formrow"><label>目的地 destination</label><input class="input" value="维也纳西站 Westbahnhof" /></div>
+          <div class="formrow"><label>价格 price(展示文本)</label><input class="input" value="全价单程 €13 / 往返 €22" /></div>
+          <div class="formrow"><label>运营时间 operatingHours</label><input class="input" value="去机场 03:00-24:00 / 返程 04:30-次日 01:00" /></div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <button class="btn btn-primary">保存(触发推送)</button>
+            <button class="btn btn-ghost">核对无误</button>
+            <span class="formNote" style="margin:0">「核对无误」更新核对时间,不算内容变更、不推送</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 匿名纠错上报 (EN4) -->
+      <h2 class="pageH2" id="reports">纠错上报队列</h2>
+      <p class="pageDesc">来自匿名旅客的数据纠错(独立于用户工单)。</p>
+      <div class="panel">
+        <table class="table">
+          <thead><tr><th>线路</th><th>问题描述</th><th>联系方式</th><th>状态</th><th>时间</th></tr></thead>
+          <tbody>
+            <tr><td>VAB 1</td><td>末班实际 23:30,非 24:00</td><td class="mono">—</td><td><span class="statusBadge open">待处理</span></td><td class="mono">06-03 13:08</td></tr>
+            <tr><td>机场四线</td><td>新增停靠「五角场」</td><td class="mono">user@x.com</td><td><span class="statusBadge replied">处理中</span></td><td class="mono">06-02 19:41</td></tr>
+            <tr><td>807 路</td><td>票价已是 ￥3</td><td class="mono">—</td><td><span class="statusBadge closed">已处理</span></td><td class="mono">05-28 10:22</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 操作审计 -->
+      <h2 class="pageH2" id="audit">操作记录 · 审计</h2>
+      <p class="pageDesc">管理端所有写操作全量记录(谁 / 何时 / 改了哪个对象)。</p>
+      <div class="panel">
+        <table class="table">
+          <thead><tr><th>时间</th><th>操作人</th><th>动作</th><th>对象</th><th>IP</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">06-03 14:22</td><td>admin</td><td>UPDATE_BUS</td><td>vie-vab1(price, last_bus)</td><td class="mono">10.0.0.4</td></tr>
+            <tr><td class="mono">06-03 16:40</td><td>op_lily</td><td>REPLY_TICKET</td><td>#1042</td><td class="mono">10.0.0.7</td></tr>
+            <tr><td class="mono">06-02 09:15</td><td>admin</td><td>VERIFY_BUS</td><td>pvg-line4(核对无误)</td><td class="mono">10.0.0.4</td></tr>
+            <tr><td class="mono">05-30 10:05</td><td>admin</td><td>DELETE_BUS</td><td>vie-tmp8(已下线,通知订阅者)</td><td class="mono">10.0.0.4</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

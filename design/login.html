@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>登录 / 注册 · 机场巴士信息</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__in">
+      <a class="brand" href="home.html"><span class="glyph">B</span> 机场巴士信息</a>
+      <div class="actions">
+        <div class="lang" role="group" aria-label="语言">
+          <button aria-pressed="true">中文</button><button aria-pressed="false">EN</button><button aria-pressed="false">DE</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="authCard reveal d1">
+      <div class="tabs" role="group">
+        <button id="t-login" aria-pressed="true">登录</button>
+        <button id="t-reg" aria-pressed="false">注册</button>
+      </div>
+
+      <!-- 登录 -->
+      <form id="form-login">
+        <div class="formrow"><label>用户名 / 邮箱</label><input class="input" type="text" placeholder="用户名或邮箱" /></div>
+        <div class="formrow">
+          <label style="display:flex;justify-content:space-between;align-items:center">密码 <a href="#" id="go-recover" style="font-weight:500;color:var(--brand);font-size:12px">忘记密码?</a></label>
+          <input class="input" type="password" placeholder="密码" />
+        </div>
+        <button type="button" class="btn btn-primary btn-block">登录</button>
+        <p class="formhint">还没有账号?<a href="#" id="go-reg">注册一个</a> · 查询无需登录</p>
+      </form>
+
+      <!-- 找回密码(邮箱) -->
+      <form id="form-recover" style="display:none">
+        <p class="formNote" style="margin:0 0 14px">输入注册邮箱,我们会发送重置密码的链接到邮箱。</p>
+        <div class="formrow"><label>注册邮箱</label><input class="input" type="email" placeholder="you@example.com" /></div>
+        <button type="button" class="btn btn-primary btn-block">发送重置链接</button>
+        <p class="formhint"><a href="#" id="back-login">返回登录</a></p>
+      </form>
+
+      <!-- 注册(邮箱验证码) -->
+      <form id="form-reg" style="display:none">
+        <div class="formrow"><label>用户名</label><input class="input" type="text" placeholder="3-20 位,字母/数字" /></div>
+        <div class="formrow"><label>邮箱</label><input class="input" type="email" placeholder="you@example.com" /></div>
+        <div class="formrow">
+          <label>邮箱验证码</label>
+          <div style="display:flex;gap:8px">
+            <input class="input" type="text" placeholder="6 位验证码" style="flex:1" />
+            <button type="button" class="btn btn-ghost" style="white-space:nowrap" onclick="this.textContent='已发送 60s';this.disabled=true">获取验证码</button>
+          </div>
+        </div>
+        <div class="formrow"><label>密码</label><input class="input" type="password" placeholder="至少 8 位" /></div>
+        <button type="button" class="btn btn-primary btn-block">注册</button>
+        <p class="formNote">用户名 / 邮箱重复将提示「已被占用」(409)。注册需邮箱验证码;登录支持邮箱找回密码。</p>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    document.querySelectorAll('.lang button').forEach((b)=>b.addEventListener('click',()=>{document.querySelectorAll('.lang button').forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');}));
+    const tl=document.getElementById('t-login'),tr=document.getElementById('t-reg'),fl=document.getElementById('form-login'),fr=document.getElementById('form-reg'),fc=document.getElementById('form-recover');
+    function show(view){ // 'login' | 'reg' | 'recover'
+      tl.setAttribute('aria-pressed', view==='login');
+      tr.setAttribute('aria-pressed', view==='reg');
+      fl.style.display = view==='login' ? 'block' : 'none';
+      fr.style.display = view==='reg' ? 'block' : 'none';
+      fc.style.display = view==='recover' ? 'block' : 'none';
+    }
+    tl.onclick=()=>show('login'); tr.onclick=()=>show('reg');
+    document.getElementById('go-reg').onclick=(e)=>{e.preventDefault();show('reg');};
+    document.getElementById('go-recover').onclick=(e)=>{e.preventDefault();show('recover');};
+    document.getElementById('back-login').onclick=(e)=>{e.preventDefault();show('login');};
+  </script>
+</body>
+</html>

@@ -27,3 +27,7 @@ application-local.properties
 
 # Logs
 *.log
+.gstack/
+
+# Local agent config (per-machine, not shared)
+.claude/settings.local.json
