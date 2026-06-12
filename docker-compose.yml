@@ -1,0 +1,28 @@
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: airportbus
+      MYSQL_USER: airportbus
+      MYSQL_PASSWORD: airportbus
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_0900_ai_ci
+    # 宿主端口 3307 避开本机已有的 MySQL(容器内部仍为 3306)
+    ports: ["3307:3306"]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes: ["mysql_data:/var/lib/mysql"]
+  redis:
+    image: redis:7-alpine
+    # 宿主端口 6380 避开本机已有的 Redis(容器内部仍为 6379)
+    ports: ["6380:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+volumes:
+  mysql_data:
