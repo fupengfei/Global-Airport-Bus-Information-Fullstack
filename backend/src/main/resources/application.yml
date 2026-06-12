@@ -1,0 +1,21 @@
+server:
+  port: 8080
+spring:
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/airportbus?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC
+    username: ${DB_USER:airportbus}
+    password: ${DB_PASSWORD:airportbus}
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+airportbus:
+  seed:
+    enabled: ${SEED_ENABLED:true}   # D4: 启动幂等导入开关
