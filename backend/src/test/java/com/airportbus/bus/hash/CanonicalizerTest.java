@@ -61,4 +61,19 @@ class CanonicalizerTest {
                 base().stops(), base().schedules(), base().alerts(), base().images(), base().files());
         assertThat(Canonicalizer.contentHash(trimmed)).isEqualTo(Canonicalizer.contentHash(untrimmed));
     }
+
+    @Test
+    void nfcNormalizationProducesSameHash() {
+        // 预组合形:Å=U+00C5, ö=U+00F6。分解形:A+◌̊(U+030A), o+◌̈(U+0308)。
+        // 两者在源码里是不同的码点序列,经 NFC 归一后应等价 → 同一 hash。
+        // 守住 E2 的 NFC 路径:若 norm() 里的 Normalizer.normalize 被误删,本测试会变红。
+        String pre = "\u00C5ngstr\u00F6m";        // precomposed: A-ring(U+00C5) + o-diaeresis(U+00F6)
+        String dec = "A\u030Angstro\u0308m";      // decomposed: A + U+030A , o + U+0308
+        assertThat(pre).isNotEqualTo(dec);          // 自检:源码层面确实不同
+        CanonicalBus precomposed = new CanonicalBus(pre, "Westbahnhof", "ÖBB", "40min", "€11", "03:00-24:00",
+                base().stops(), base().schedules(), base().alerts(), base().images(), base().files());
+        CanonicalBus decomposed = new CanonicalBus(dec, "Westbahnhof", "ÖBB", "40min", "€11", "03:00-24:00",
+                base().stops(), base().schedules(), base().alerts(), base().images(), base().files());
+        assertThat(Canonicalizer.contentHash(precomposed)).isEqualTo(Canonicalizer.contentHash(decomposed));
+    }
 }
