@@ -1,0 +1,294 @@
+{
+  "countries": [
+    {
+      "code": "AT",
+      "name": "奥地利",
+      "cities": [
+        {
+          "name": "维也纳",
+          "airports": [
+            {
+              "code": "VIE",
+              "name": "维也纳国际机场",
+              "officialUrl": "https://www.viennaairportbus.com/en/",
+              "buses": [
+                {
+                  "id": "vie-vab1",
+                  "route": "VAB 1",
+                  "destination": "维也纳西站 Westbahnhof",
+                  "operator": "Vienna Airport Bus (ÖBB Postbus)",
+                  "officialUrl": "https://www.viennaairportbus.com/en/dam/jcr:e5eca75c-325d-4597-8440-438b53acbccc/fahrplan-vab1.pdf",
+                  "duration": "约 40 分钟",
+                  "price": "全价单程 €11 / 往返 €20",
+                  "operatingHours": "去机场 03:00-24:00 / 返程 04:30-次日 01:00",
+                  "stops": ["维也纳西站 Westbahnhof", "维也纳中央车站 Hauptbahnhof (南入口)", "维也纳机场"],
+                  "schedules": [
+                    { "timeRange": "全天运营时段", "interval": "每 30 分钟", "note": "全天固定班距" }
+                  ],
+                  "images": [
+                    { "url": "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=400", "caption": "Vienna Airport Bus" }
+                  ],
+                  "files": [
+                    { "name": "VAB 1 官方时刻表 PDF", "url": "https://www.viennaairportbus.com/en/dam/jcr:e5eca75c-325d-4597-8440-438b53acbccc/fahrplan-vab1.pdf" }
+                  ],
+                  "alerts": [
+                    { "type": "info", "message": "2026 年 5 月 1 日至 6 月 30 日,Klimaticket 用户享全价 35% 折扣", "startDate": "2026-05-01", "endDate": "2026-06-30" }
+                  ],
+                  "lastUpdated": "2026-06-03",
+                  "fetchFailed": false
+                },
+                {
+                  "id": "vie-vab2",
+                  "route": "VAB 2",
+                  "destination": "Morzinplatz / Schwedenplatz",
+                  "operator": "Vienna Airport Bus (ÖBB Postbus)",
+                  "officialUrl": "https://www.viennaairportbus.com/en/dam/jcr:f2c24e7d-d3d7-44e9-9329-0112a136099e/fahrplan-vab2.pdf",
+                  "duration": "约 20 分钟",
+                  "price": "全价单程 €11 / 往返 €20",
+                  "operatingHours": "去机场 03:30-23:30 / 返程 04:15-次日 00:15",
+                  "stops": ["Morzinplatz / Schwedenplatz", "维也纳机场"],
+                  "schedules": [
+                    { "timeRange": "去机场 03:30-21:30", "interval": "每 30 分钟", "note": "半小时一班" },
+                    { "timeRange": "去机场 21:30-23:30", "interval": "每 60 分钟", "note": "夜间每小时一班" },
+                    { "timeRange": "返程 04:15-22:15", "interval": "每 30 分钟", "note": "半小时一班" },
+                    { "timeRange": "返程 22:15-次日 00:15", "interval": "每 60 分钟", "note": "夜间每小时一班" }
+                  ],
+                  "images": [],
+                  "files": [
+                    { "name": "VAB 2 官方时刻表 PDF", "url": "https://www.viennaairportbus.com/en/dam/jcr:f2c24e7d-d3d7-44e9-9329-0112a136099e/fahrplan-vab2.pdf" }
+                  ],
+                  "alerts": [
+                    { "type": "info", "message": "2026 年 5 月 1 日至 6 月 30 日,Klimaticket 用户享全价 35% 折扣", "startDate": "2026-05-01", "endDate": "2026-06-30" }
+                  ],
+                  "lastUpdated": "2026-06-03",
+                  "fetchFailed": false
+                },
+                {
+                  "id": "vie-vab3",
+                  "route": "VAB 3",
+                  "destination": "Donaustadt (Donauzentrum)",
+                  "operator": "Vienna Airport Bus (ÖBB Postbus)",
+                  "officialUrl": "https://www.viennaairportbus.com/en/dam/jcr:4af59ea3-a0dc-4a22-833b-92d941f28c43/fahrplan-vab3.pdf",
+                  "duration": "约 45 分钟",
+                  "price": "全价单程 €11 / 往返 €20",
+                  "operatingHours": "去机场 04:58-19:58 / 返程 06:00-20:00",
+                  "stops": ["Donauzentrum", "Kagraner Brücke", "Hotel NH Danube City", "Kaisermühlen/VIC (Austria Center)", "Krieau (Messe Wien)", "Stadion", "Donaumarina", "维也纳机场"],
+                  "schedules": [
+                    { "timeRange": "去机场 04:58-19:58", "interval": "每 60 分钟", "note": "每小时一班" },
+                    { "timeRange": "返程 06:00-20:00", "interval": "每 60 分钟", "note": "每小时一班" }
+                  ],
+                  "images": [],
+                  "files": [
+                    { "name": "VAB 3 官方时刻表 PDF", "url": "https://www.viennaairportbus.com/en/dam/jcr:4af59ea3-a0dc-4a22-833b-92d941f28c43/fahrplan-vab3.pdf" }
+                  ],
+                  "alerts": [
+                    { "type": "info", "message": "自 2025 年 12 月 14 日起,新增机场 21:30 发往 Donauzentrum 的班次", "startDate": "2025-12-14", "endDate": "2026-12-31" }
+                  ],
+                  "lastUpdated": "2026-06-03",
+                  "fetchFailed": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "CN",
+      "name": "中国",
+      "cities": [
+        {
+          "name": "上海",
+          "airports": [
+            {
+              "code": "PVG",
+              "name": "上海浦东国际机场",
+              "officialUrl": "https://www.shanghaiairport.com/pudong/dmjt/index.html",
+              "buses": [
+                {
+                  "id": "pvg-line4",
+                  "route": "机场四线",
+                  "destination": "上海火车站(北广场)",
+                  "operator": "上海空港巴士",
+                  "officialUrl": "https://www.shanghaiairport.com/pudong/dmjt/index.html",
+                  "duration": "市区始发 05:00 / 首班车到机场约 06:10-06:20",
+                  "price": "￥2-28",
+                  "operatingHours": "T1 航站楼 07:00-23:00 / T2 航站楼 07:03-23:03",
+                  "stops": ["浦东机场", "邯郸路(五角场)", "运光新村(大柏树)", "虹口足球场(花园路)", "上海火车站(北广场)"],
+                  "schedules": [
+                    { "timeRange": "全天运营时段", "interval": "每 20-70 分钟", "note": "受路况影响有调整" }
+                  ],
+                  "images": [
+                    { "url": "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=400", "caption": "机场巴士" }
+                  ],
+                  "files": [
+                    { "name": "浦东机场地面交通页", "url": "https://www.shanghaiairport.com/pudong/dmjt/index.html" }
+                  ],
+                  "alerts": [],
+                  "lastUpdated": "2026-06-03",
+                  "fetchFailed": false
+                },
+                {
+                  "id": "pvg-line7",
+                  "route": "机场七线",
+                  "destination": "上海南站",
+                  "operator": "上海空港巴士",
+                  "officialUrl": "https://www.shanghaiairport.com/pudong/dmjt/index.html",
+                  "duration": "市区始发 06:30 / 首班车到机场约 07:40",
+                  "price": "￥4-20",
+                  "operatingHours": "T1 航站楼 07:30-23:00 / T2 航站楼 07:35-23:05",
+                  "stops": ["浦东机场", "上海南站"],
+                  "schedules": [
+                    { "timeRange": "全天运营时段", "interval": "每 25-45 分钟", "note": "受路况影响有调整" }
+                  ],
+                  "images": [],
+                  "files": [
+                    { "name": "浦东机场地面交通页", "url": "https://www.shanghaiairport.com/pudong/dmjt/index.html" }
+                  ],
+                  "alerts": [],
+                  "lastUpdated": "2026-06-03",
+                  "fetchFailed": false
+                },
+                {
+                  "id": "pvg-line-night",
+                  "route": "守航夜宵线",
+                  "destination": "虹桥枢纽东交通中心",
+                  "operator": "上海空港巴士",
+                  "officialUrl": "https://www.shanghaiairport.com/pudong/dmjt/index.html",
+                  "duration": "夜间线路,单向行驶",
+                  "price": "￥18-34",
+                  "operatingHours": "T1 航站楼 23:00 至次日 05:30 / T2 航站楼 23:03 至次日 05:33",
+                  "stops": ["浦东机场", "龙阳路芳甸路", "世纪大道地铁站", "延安东路浙江中路", "延安中路华山路", "延安西路虹许路", "虹桥枢纽东交通中心"],
+                  "schedules": [
+                    { "timeRange": "23:00-次日 05:30", "interval": "客满即发,最大不超过 30 分钟", "note": "按实际客流调整" }
+                  ],
+                  "images": [],
+                  "files": [
+                    { "name": "浦东机场地面交通页", "url": "https://www.shanghaiairport.com/pudong/dmjt/index.html" }
+                  ],
+                  "alerts": [],
+                  "lastUpdated": "2026-06-03",
+                  "fetchFailed": false
+                },
+                {
+                  "id": "pvg-shuttle-p4",
+                  "route": "穿梭巴士",
+                  "destination": "P4 长时停车库 ↔ T1/T2 航站楼",
+                  "operator": "上海机场",
+                  "officialUrl": "https://www.shanghaiairport.com/pudong/csbs/index.html",
+                  "duration": "约 10 分钟",
+                  "price": "免费",
+                  "operatingHours": "24 小时",
+                  "stops": ["P4 长时停车库", "T1 航站楼", "T2 航站楼"],
+                  "schedules": [
+                    { "timeRange": "全天 00:00-24:00", "interval": "每 10-15 分钟", "note": "24 小时运营" }
+                  ],
+                  "images": [],
+                  "files": [],
+                  "alerts": [
+                    { "type": "reroute", "message": "自 2026 年 4 月 29 日起,T1 航站楼出发层上客点由原 1 号门调整为 4 号门", "startDate": "2026-04-29", "endDate": "2026-12-31" }
+                  ],
+                  "lastUpdated": "2026-06-03",
+                  "fetchFailed": false
+                }
+              ]
+            },
+            {
+              "code": "SHA",
+              "name": "上海虹桥国际机场",
+              "officialUrl": "https://www.shanghaiairport.com/hongqiao/dmjt/index.html",
+              "buses": [
+                {
+                  "id": "sha-807",
+                  "route": "807 路",
+                  "destination": "清涧新村",
+                  "operator": "上海公交",
+                  "officialUrl": "https://www.shanghaiairport.com/hongqiao/dmjt/index.html",
+                  "duration": "市区普通公交线路",
+                  "price": "￥2",
+                  "operatingHours": "虹桥机场 T1 航站楼 05:30-23:00",
+                  "stops": ["虹桥机场 T1 航站楼", "清涧新村"],
+                  "schedules": [
+                    { "timeRange": "05:30-23:00", "interval": "每 20-30 分钟", "note": "受路况影响有调整" }
+                  ],
+                  "images": [],
+                  "files": [
+                    { "name": "虹桥机场地面交通页", "url": "https://www.shanghaiairport.com/hongqiao/dmjt/index.html" }
+                  ],
+                  "alerts": [
+                    { "type": "info", "message": "自 2026 年 1 月 20 日起,2 号航站楼 P7 停车库 2F 进行运行动线调整改造,请留意现场指引", "startDate": "2026-01-20", "endDate": "2026-09-30" }
+                  ],
+                  "lastUpdated": "2026-06-03",
+                  "fetchFailed": false
+                },
+                {
+                  "id": "sha-176",
+                  "route": "176 路",
+                  "destination": "天山西路福泉路",
+                  "operator": "上海公交",
+                  "officialUrl": "https://www.shanghaiairport.com/hongqiao/dmjt/index.html",
+                  "duration": "市区普通公交线路",
+                  "price": "￥2",
+                  "operatingHours": "虹桥机场 T1 航站楼 07:00-09:30、17:00-19:30(周六周日及国定假日停驶)",
+                  "stops": ["虹桥机场 T1 航站楼", "天山西路福泉路"],
+                  "schedules": [
+                    { "timeRange": "07:00-09:30 / 17:00-19:30", "interval": "约 20 分钟", "note": "仅工作日运营,周末及节假日停驶" }
+                  ],
+                  "images": [],
+                  "files": [
+                    { "name": "虹桥机场地面交通页", "url": "https://www.shanghaiairport.com/hongqiao/dmjt/index.html" }
+                  ],
+                  "alerts": [],
+                  "lastUpdated": "2026-06-03",
+                  "fetchFailed": false
+                },
+                {
+                  "id": "sha-941",
+                  "route": "941 路",
+                  "destination": "上海火车站(南广场)",
+                  "operator": "上海公交",
+                  "officialUrl": "https://www.shanghaiairport.com/hongqiao/dmjt/index.html",
+                  "duration": "市区普通公交线路",
+                  "price": "￥2",
+                  "operatingHours": "虹桥东交通中心 05:30-23:00",
+                  "stops": ["虹桥东交通中心", "上海火车站(南广场)"],
+                  "schedules": [
+                    { "timeRange": "05:30-23:00", "interval": "约 20 分钟", "note": "受路况影响有调整" }
+                  ],
+                  "images": [],
+                  "files": [
+                    { "name": "虹桥机场地面交通页", "url": "https://www.shanghaiairport.com/hongqiao/dmjt/index.html" }
+                  ],
+                  "alerts": [],
+                  "lastUpdated": "2026-06-03",
+                  "fetchFailed": false
+                },
+                {
+                  "id": "sha-night-pvg",
+                  "route": "虹桥守航夜宵定班线",
+                  "destination": "浦东国际机场(单向直达)",
+                  "operator": "上海空港巴士",
+                  "officialUrl": "https://www.shanghaiairport.com/hongqiao/dmjt/index.html",
+                  "duration": "两场间夜间直达线",
+                  "price": "￥36",
+                  "operatingHours": "虹桥东交通中心 22:30-01:00",
+                  "stops": ["虹桥东交通中心", "浦东国际机场"],
+                  "schedules": [
+                    { "timeRange": "固定班点", "interval": "22:30 / 23:10 / 23:40 / 00:30 / 01:00", "note": "单向直达,定时发车" }
+                  ],
+                  "images": [],
+                  "files": [
+                    { "name": "虹桥机场地面交通页", "url": "https://www.shanghaiairport.com/hongqiao/dmjt/index.html" }
+                  ],
+                  "alerts": [],
+                  "lastUpdated": "2026-06-03",
+                  "fetchFailed": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
