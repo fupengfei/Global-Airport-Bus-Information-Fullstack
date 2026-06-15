@@ -6,18 +6,16 @@ const { t, locale } = useI18n()
 
 <template>
   <header class="topbar">
-    <router-link to="/" class="brand">{{ t('app.title') }}</router-link>
-    <select :value="locale" @change="(e) => setLocale((e.target as HTMLSelectElement).value as 'zh-CN' | 'en')">
-      <option value="zh-CN">中文</option>
-      <option value="en">English</option>
-    </select>
+    <div class="topbar__in">
+      <router-link class="brand" to="/"><span class="glyph">B</span> {{ t('app.title') }}</router-link>
+      <div class="actions">
+        <div class="lang" role="group" aria-label="language">
+          <button :aria-pressed="locale === 'zh-CN'" @click="setLocale('zh-CN')">中文</button>
+          <button :aria-pressed="locale === 'en'" @click="setLocale('en')">EN</button>
+        </div>
+        <router-link class="btn btn-ghost btn-sm" to="/">{{ t('app.login') }}</router-link>
+      </div>
+    </div>
   </header>
-  <main class="content"><router-view /></main>
+  <main class="wrap"><router-view /></main>
 </template>
-
-<style>
-:root { --maxw: 880px; }
-.topbar { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid #eee; }
-.brand { font-weight:700; text-decoration:none; color:inherit; }
-.content { max-width: var(--maxw); margin: 0 auto; padding: 16px; }
-</style>
