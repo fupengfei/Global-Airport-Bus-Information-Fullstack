@@ -2,6 +2,7 @@ package com.airportbus.bus.service;
 
 import com.airportbus.bus.api.dto.*;
 import com.airportbus.bus.mapper.BusQueryMapper;
+import com.airportbus.bus.mapper.SearchHotnessMapper;
 import com.airportbus.common.ApiException;
 import com.airportbus.common.ErrorCode;
 import org.springframework.cache.annotation.Cacheable;
@@ -13,9 +14,14 @@ import java.util.*;
 public class BusQueryService {
 
     private final BusQueryMapper mapper;
+    private final SearchHotnessMapper hotnessMapper;
+    private final SearchHotnessService hotness;
 
-    public BusQueryService(BusQueryMapper mapper) {
+    public BusQueryService(BusQueryMapper mapper, SearchHotnessMapper hotnessMapper,
+                           SearchHotnessService hotness) {
         this.mapper = mapper;
+        this.hotnessMapper = hotnessMapper;
+        this.hotness = hotness;
     }
 
     @Cacheable(cacheNames = "tree")
@@ -42,13 +48,18 @@ public class BusQueryService {
         if (mapper.selectAirportIdByCode(airportCode) == null) {
             throw new ApiException(ErrorCode.AIRPORT_NOT_FOUND, "no airport: " + airportCode);
         }
-        return mapper.selectBusesByAirport(airportCode); // 空机场返回空数组
+        List<BusSummaryDto> buses = mapper.selectBusesByAirport(airportCode); // 空机场返回空数组
+        // 命中成功后异步 +1。cache hit 时不进入本方法体,计数只在 cache miss 触发(见 SearchHotnessService 注释)。
+        hotness.record(airportCode);
+        return buses;
     }
 
     @Cacheable(cacheNames = "busDetail", key = "#sourceId")
     public BusDetailDto detail(String sourceId) {
         BusDetailDto.HeadRow h = mapper.selectBusHead(sourceId);
         if (h == null) throw new ApiException(ErrorCode.BUS_NOT_FOUND, "no bus: " + sourceId);
+        // detail 命中后解析其所属机场 code 再异步计数(BusDetail 不含 airport code,额外一次 mapper 查询)。
+        hotness.record(hotnessMapper.selectAirportCodeByBusSourceId(sourceId));
         return new BusDetailDto(
                 h.sourceId(), h.route(), h.destination(), h.operator(), h.officialUrl(),
                 h.duration(), h.price(), h.operatingHours(), h.lastUpdated(), h.fetchFailed(),

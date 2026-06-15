@@ -3,6 +3,7 @@ package com.airportbus.bus.api;
 import com.airportbus.bus.api.dto.BusDetailDto;
 import com.airportbus.bus.mapper.BusQueryMapper;
 import com.airportbus.bus.mapper.BusWriteMapper;
+import com.airportbus.bus.mapper.SearchHotnessMapper;
 import com.airportbus.bus.service.BusQueryService;
 import com.airportbus.common.ApiException;
 import com.airportbus.common.ErrorCode;
@@ -31,6 +32,7 @@ class BusQueryControllerTest {
     // 但不装配 MyBatis sqlSessionFactory,故用 @MockBean 顶替避免上下文启动失败
     @MockBean BusWriteMapper busWriteMapper;
     @MockBean BusQueryMapper busQueryMapper;
+    @MockBean SearchHotnessMapper searchHotnessMapper;
 
     @Test
     void detailReturnsResourceBody() throws Exception {

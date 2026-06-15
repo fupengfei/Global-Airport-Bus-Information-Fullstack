@@ -2,6 +2,7 @@ package com.airportbus.common;
 
 import com.airportbus.bus.mapper.BusQueryMapper;
 import com.airportbus.bus.mapper.BusWriteMapper;
+import com.airportbus.bus.mapper.SearchHotnessMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -30,6 +31,7 @@ class GlobalExceptionHandlerTest {
     // 这个 bean 但不装配 MyBatis sqlSessionFactory,故用 @MockBean 顶替,避免切片上下文启动失败。
     @MockBean BusWriteMapper busWriteMapper;
     @MockBean BusQueryMapper busQueryMapper;
+    @MockBean SearchHotnessMapper searchHotnessMapper;
 
     @Test
     void apiExceptionMapsToStatusAndEnvelope() throws Exception {
