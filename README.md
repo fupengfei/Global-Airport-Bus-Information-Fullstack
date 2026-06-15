@@ -15,6 +15,26 @@
 
 数据库 schema 不在设计文档内,留待实现环节(基于 design.md「系统核心数据结构」落地)。
 
+## Quickstart(本地一键起)
+
+```bash
+cp .env.example .env
+docker compose up -d --build      # mysql + redis + 后端 + 前端
+# 前端: http://localhost:8081
+# 后端 API: http://localhost:8080/api/v1/tree
+# Swagger: http://localhost:8080/swagger-ui/index.html
+```
+
+种子数据(维也纳/上海)在后端首启时幂等导入(`SEED_ENABLED=true`)。
+
+### 本地开发(热重载)
+
+```bash
+docker compose up -d mysql redis
+cd backend && mvn spring-boot:run         # :8080
+cd frontend && npm install && npm run dev  # :5173,已配 /api 代理到 :8080
+```
+
 ## 下一步
 
 详见 design.md 的 The Assignment。实现第一步:基于「系统核心数据结构」设计具体 schema + 写幂等种子导入器,把维也纳/上海两城数据导入并跑通查询主线。
