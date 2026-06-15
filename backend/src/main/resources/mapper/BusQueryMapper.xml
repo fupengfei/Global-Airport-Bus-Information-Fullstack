@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.airportbus.bus.mapper.BusQueryMapper">
+
+  <select id="selectTreeRows" resultType="com.airportbus.bus.mapper.BusQueryMapper$TreeRow">
+    SELECT c.code AS countryCode, c.name AS countryName, ci.name AS cityName,
+           a.code AS airportCode, a.name AS airportName
+    FROM country c
+    JOIN city ci   ON ci.country_id = c.id
+    JOIN airport a ON a.city_id = ci.id
+    ORDER BY c.name, ci.name, a.name
+  </select>
+
+  <select id="selectAirportIdByCode" resultType="java.lang.Long">
+    SELECT id FROM airport WHERE code = #{code}
+  </select>
+
+  <select id="selectBusesByAirport" resultType="com.airportbus.bus.api.dto.BusSummaryDto">
+    SELECT b.source_id AS sourceId, b.route, b.destination, b.operator,
+           b.duration, b.price, b.last_updated AS lastUpdated, b.fetch_failed AS fetchFailed
+    FROM bus_route b
+    JOIN airport a ON a.id = b.airport_id
+    WHERE a.code = #{code}
+    ORDER BY b.route
+  </select>
+
+  <select id="selectBusHead" resultType="com.airportbus.bus.api.dto.BusDetailDto$HeadRow">
+    SELECT id, source_id AS sourceId, route, destination, operator, official_url AS officialUrl,
+           duration, price, operating_hours AS operatingHours,
+           last_updated AS lastUpdated, fetch_failed AS fetchFailed
+    FROM bus_route WHERE source_id = #{sourceId}
+  </select>
+
+  <select id="selectStops" resultType="java.lang.String">
+    SELECT name FROM bus_stop WHERE bus_route_id = #{busId} ORDER BY seq
+  </select>
+  <select id="selectSchedules" resultType="com.airportbus.bus.api.dto.BusDetailDto$Schedule">
+    SELECT time_range AS timeRange, interval_text AS intervalText, note
+    FROM bus_schedule WHERE bus_route_id = #{busId} ORDER BY id
+  </select>
+  <select id="selectImages" resultType="com.airportbus.bus.api.dto.BusDetailDto$Image">
+    SELECT url, caption FROM bus_image WHERE bus_route_id = #{busId} ORDER BY id
+  </select>
+  <select id="selectFiles" resultType="com.airportbus.bus.api.dto.BusDetailDto$FileRef">
+    SELECT name, url FROM bus_file WHERE bus_route_id = #{busId} ORDER BY id
+  </select>
+  <select id="selectAlerts" resultType="com.airportbus.bus.api.dto.BusDetailDto$Alert">
+    SELECT type, message, start_date AS startDate, end_date AS endDate
+    FROM bus_alert WHERE bus_route_id = #{busId} ORDER BY id
+  </select>
+</mapper>

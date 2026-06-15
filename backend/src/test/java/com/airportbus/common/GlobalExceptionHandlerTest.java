@@ -1,5 +1,6 @@
 package com.airportbus.common;
 
+import com.airportbus.bus.mapper.BusQueryMapper;
 import com.airportbus.bus.mapper.BusWriteMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ class GlobalExceptionHandlerTest {
     // @MapperScan("com.airportbus.bus.mapper") 在主类上,@WebMvcTest 切片会注册 BusWriteMapper
     // 这个 bean 但不装配 MyBatis sqlSessionFactory,故用 @MockBean 顶替,避免切片上下文启动失败。
     @MockBean BusWriteMapper busWriteMapper;
+    @MockBean BusQueryMapper busQueryMapper;
 
     @Test
     void apiExceptionMapsToStatusAndEnvelope() throws Exception {
