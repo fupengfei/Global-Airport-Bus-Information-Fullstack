@@ -1,1 +1,28 @@
-<template><div /></template>
+<script setup lang="ts">
+import { toRef } from 'vue'
+import { useQuery } from '@tanstack/vue-query'
+import { getBusDetail } from '../api/bus'
+import StateBlock from '../components/StateBlock.vue'
+import BusCard from '../components/BusCard.vue'
+
+const props = defineProps<{ sourceId: string }>()
+const sourceId = toRef(props, 'sourceId')
+const { data, isLoading, isError } = useQuery({
+  queryKey: ['busDetail', sourceId],
+  queryFn: () => getBusDetail(sourceId.value),
+})
+</script>
+
+<template>
+  <div class="wrap">
+    <nav class="crumbs">
+      <router-link to="/">首页</router-link>
+      <span class="sep"> / </span>
+      <span>{{ data?.route ?? sourceId }}</span>
+    </nav>
+
+    <StateBlock :loading="isLoading" :error="isError">
+      <BusCard v-if="data" :bus="data" />
+    </StateBlock>
+  </div>
+</template>
