@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.airportbus.bus.mapper.BusWriteMapper">
+
+  <select id="findCountryId" resultType="java.lang.Long">
+    SELECT id FROM country WHERE code = #{code}
+  </select>
+  <insert id="insertCountry">
+    INSERT INTO country(code, name) VALUES(#{code}, #{name})
+  </insert>
+
+  <select id="findCityId" resultType="java.lang.Long">
+    SELECT id FROM city WHERE country_id = #{countryId} AND name = #{name}
+  </select>
+  <insert id="insertCity" useGeneratedKeys="true" keyProperty="id" parameterType="map">
+    INSERT INTO city(country_id, name) VALUES(#{countryId}, #{name})
+  </insert>
+
+  <select id="findAirportId" resultType="java.lang.Long">
+    SELECT id FROM airport WHERE code = #{code}
+  </select>
+  <insert id="insertAirport" useGeneratedKeys="true" keyProperty="id" parameterType="map">
+    INSERT INTO airport(city_id, code, name, official_url) VALUES(#{cityId}, #{code}, #{name}, #{officialUrl})
+  </insert>
+  <update id="updateAirport" parameterType="map">
+    UPDATE airport SET city_id=#{cityId}, name=#{name}, official_url=#{officialUrl} WHERE id=#{id}
+  </update>
+
+  <select id="findBusId" resultType="java.lang.Long">
+    SELECT id FROM bus_route WHERE source_id = #{sourceId}
+  </select>
+  <insert id="insertBus" useGeneratedKeys="true" keyProperty="id" parameterType="map">
+    INSERT INTO bus_route(airport_id, source_id, route, destination, operator, official_url,
+                          duration, price, operating_hours, last_updated, fetch_failed, content_hash)
+    VALUES(#{airportId}, #{sourceId}, #{route}, #{destination}, #{operator}, #{officialUrl},
+           #{duration}, #{price}, #{operatingHours}, #{lastUpdated}, #{fetchFailed}, #{contentHash})
+  </insert>
+  <update id="updateBus" parameterType="map">
+    UPDATE bus_route SET airport_id=#{airportId}, route=#{route}, destination=#{destination},
+      operator=#{operator}, official_url=#{officialUrl}, duration=#{duration}, price=#{price},
+      operating_hours=#{operatingHours}, last_updated=#{lastUpdated}, fetch_failed=#{fetchFailed},
+      content_hash=#{contentHash}
+    WHERE id=#{id}
+  </update>
+
+  <delete id="deleteStops">DELETE FROM bus_stop WHERE bus_route_id = #{busId}</delete>
+  <delete id="deleteSchedules">DELETE FROM bus_schedule WHERE bus_route_id = #{busId}</delete>
+  <delete id="deleteImages">DELETE FROM bus_image WHERE bus_route_id = #{busId}</delete>
+  <delete id="deleteFiles">DELETE FROM bus_file WHERE bus_route_id = #{busId}</delete>
+  <delete id="deleteAlerts">DELETE FROM bus_alert WHERE bus_route_id = #{busId}</delete>
+
+  <insert id="insertStop">INSERT INTO bus_stop(bus_route_id, seq, name) VALUES(#{busId}, #{seq}, #{name})</insert>
+  <insert id="insertSchedule" parameterType="map">
+    INSERT INTO bus_schedule(bus_route_id, time_range, interval_text, note)
+    VALUES(#{busId}, #{timeRange}, #{intervalText}, #{note})
+  </insert>
+  <insert id="insertImage">INSERT INTO bus_image(bus_route_id, url, caption) VALUES(#{busId}, #{url}, #{caption})</insert>
+  <insert id="insertFile">INSERT INTO bus_file(bus_route_id, name, url) VALUES(#{busId}, #{name}, #{url})</insert>
+  <insert id="insertAlert" parameterType="map">
+    INSERT INTO bus_alert(bus_route_id, type, message, start_date, end_date)
+    VALUES(#{busId}, #{type}, #{message}, #{startDate}, #{endDate})
+  </insert>
+</mapper>
