@@ -1,5 +1,6 @@
 export default {
   app: { title: 'Airport Bus Info', login: 'Log in / Sign up' },
+  nav: { home: 'Home' },
   home: {
     kicker: 'Airport Ground Transport',
     title: 'Airport Bus Info',
@@ -16,6 +17,8 @@ export default {
     official: 'Official site ↗',
     routeCount: '{count} bus routes · pick one to view',
     pickRoute: 'Pick a route to see its details',
+    allRoutes: 'All routes',
+    stopHit: 'Stop',
     noBuses: 'No bus routes available for this airport yet.',
     footer: '// Source: airport & operator official sites · For reference only · Currently covers Vienna and Shanghai',
   },
@@ -24,6 +27,7 @@ export default {
     stops: 'Stops', schedules: 'Schedules', images: 'Images', files: 'Files', official: 'Official link',
     serviceHead: '🚌 Duration · Hours · Schedule', serviceSub: 'Service',
     schedAllDay: 'All day', noSchedule: 'No schedule info',
+    viewDetail: 'View details',
   },
   state: { loading: 'Loading…', error: 'Failed to load, please retry', empty: 'No data' },
   freshness: { updated: 'Last updated', fetchFailed: 'Fetch failed, info may be outdated' },

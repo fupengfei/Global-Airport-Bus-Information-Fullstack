@@ -5,7 +5,7 @@ import type { BusDetail } from '../api/bus'
 import AlertList from './AlertList.vue'
 import FreshnessBadge from './FreshnessBadge.vue'
 
-const props = defineProps<{ bus: BusDetail }>()
+const props = defineProps<{ bus: BusDetail; detailLink?: boolean }>()
 const { t } = useI18n()
 
 // price 在设计稿里拆成「主价 / small 副价」,但 BusDetail.price 只是一段展示文本。
@@ -93,6 +93,11 @@ const hasSchedules = computed(() => props.bus.schedules.length > 0)
     <!-- 新鲜度 footer -->
     <div class="updated">
       <FreshnessBadge :last-updated="bus.lastUpdated" :fetch-failed="bus.fetchFailed" />
+      <router-link
+        v-if="detailLink"
+        class="detailLink"
+        :to="{ name: 'bus', params: { sourceId: bus.sourceId } }"
+      >{{ t('detail.viewDetail') }} →</router-link>
       <span v-if="bus.officialUrl">
         <a class="detailLink" :href="bus.officialUrl" target="_blank" rel="noopener">{{ t('detail.official') }} ↗</a>
       </span>

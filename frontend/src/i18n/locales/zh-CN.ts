@@ -1,5 +1,6 @@
 export default {
   app: { title: '机场巴士信息', login: '登录 / 注册' },
+  nav: { home: '首页' },
   home: {
     kicker: 'Airport Ground Transport',
     title: '机场巴士信息',
@@ -16,6 +17,8 @@ export default {
     official: '官网 ↗',
     routeCount: '共 {count} 条巴士线路 · 选择一条查看',
     pickRoute: '选择一条线路查看详情',
+    allRoutes: '全部线路',
+    stopHit: '站点',
     noBuses: '该机场暂无巴士线路数据。',
     footer: '// 数据源:各机场及巴士运营商官网 · 仅供参考,以现场为准 · 当前仅覆盖维也纳、上海两城',
   },
@@ -24,6 +27,7 @@ export default {
     stops: '途经站点', schedules: '班次', images: '图片', files: '文件', official: '官方链接',
     serviceHead: '🚌 时长 · 运营 · 班次', serviceSub: 'Service',
     schedAllDay: '全天', noSchedule: '暂无班次信息',
+    viewDetail: '查询详情',
   },
   state: { loading: '加载中…', error: '加载失败,请重试', empty: '暂无数据' },
   freshness: { updated: '数据最后更新', fetchFailed: '抓取失败,信息可能过期' },

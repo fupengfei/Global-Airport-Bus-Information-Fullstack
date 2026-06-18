@@ -24,3 +24,10 @@ export const getAirportBuses = (code: string) =>
   http.get<BusSummary[]>(`/airports/${encodeURIComponent(code)}/buses`).then((r) => r.data)
 export const getBusDetail = (sourceId: string) =>
   http.get<BusDetail>(`/buses/${encodeURIComponent(sourceId)}`).then((r) => r.data)
+
+export interface SearchResult {
+  airports: { code: string; name: string; cityName: string; countryCode: string }[]
+  routes: { sourceId: string; route: string; destination: string | null; airportCode: string; matchedStop: string }[]
+}
+export const search = (q: string) =>
+  http.get<SearchResult>('/search', { params: { q } }).then((r) => r.data)

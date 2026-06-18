@@ -30,7 +30,10 @@ vi.mock('../api/bus', () => ({
       images: [], files: [], alerts: [],
     }),
   ),
+  search: vi.fn(() => Promise.resolve({ airports: [], routes: [] })),
 }))
+
+vi.mock('vue-router', () => ({ useRouter: () => ({ push: vi.fn() }) }))
 
 import HomePage from '../pages/HomePage.vue'
 
@@ -73,7 +76,7 @@ describe('HomePage', () => {
     expect(wrapper.find('.title').text()).toBe('机场巴士信息')
   })
 
-  it('lists routes and renders the BusCard after picking an airport', async () => {
+  it('lists ALL route cards for the picked airport by default (#4)', async () => {
     const wrapper = mountHome()
     await flushPromises()
 
@@ -82,10 +85,11 @@ describe('HomePage', () => {
     await selects[1].setValue('Vienna')
     await selects[2].setValue('VIE')
     await flushPromises()
+    await flushPromises()
 
-    // 线路单选 + 默认选中第一条 → 详情卡
+    // 默认不选中具体线路,直接渲染该机场全部线路卡片
     expect(wrapper.find('.routePick').exists()).toBe(true)
-    expect(wrapper.find('.card').exists()).toBe(true)
+    expect(wrapper.findAll('.card').length).toBeGreaterThanOrEqual(1)
     const text = wrapper.text()
     expect(text).toContain('VAB 1')
     expect(text).toContain('约 40 分钟')
