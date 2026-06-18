@@ -54,16 +54,27 @@ public class BusQueryService {
         return buses;
     }
 
+    public SearchResultDto search(String q) {
+        String t = q == null ? "" : q.trim();
+        if (t.isEmpty()) return new SearchResultDto(List.of(), List.of());
+        return new SearchResultDto(mapper.searchAirports(t), mapper.searchRoutesByStop(t));
+    }
+
     @Cacheable(cacheNames = "busDetail", key = "#sourceId")
     public BusDetailDto detail(String sourceId) {
         BusDetailDto.HeadRow h = mapper.selectBusHead(sourceId);
         if (h == null) throw new ApiException(ErrorCode.BUS_NOT_FOUND, "no bus: " + sourceId);
         // detail 命中后解析其所属机场 code 再异步计数(BusDetail 不含 airport code,额外一次 mapper 查询)。
         hotness.record(hotnessMapper.selectAirportCodeByBusSourceId(sourceId));
+        BusQueryMapper.RouteAirport ra = mapper.selectRouteAirportCity(sourceId);
+        List<String> stops = AirportStopOrderer.airportFirst(
+                mapper.selectStops(h.id()),
+                ra == null ? null : ra.airportName(),
+                ra == null ? null : ra.cityName());
         return new BusDetailDto(
                 h.sourceId(), h.route(), h.destination(), h.operator(), h.officialUrl(),
                 h.duration(), h.price(), h.operatingHours(), h.lastUpdated(), h.fetchFailed(),
-                mapper.selectStops(h.id()),
+                stops,
                 mapper.selectSchedules(h.id()),
                 mapper.selectImages(h.id()),
                 mapper.selectFiles(h.id()),

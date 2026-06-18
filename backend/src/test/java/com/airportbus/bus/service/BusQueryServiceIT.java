@@ -1,6 +1,7 @@
 package com.airportbus.bus.service;
 
 import com.airportbus.bus.api.dto.BusDetailDto;
+import com.airportbus.bus.api.dto.SearchResultDto;
 import com.airportbus.bus.seed.SeedImporter;
 import com.airportbus.common.ApiException;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +22,7 @@ import static org.assertj.core.api.Assertions.*;
         "airportbus.seed.enabled=false",
         "spring.cache.type=none",
         "spring.data.redis.host=localhost",
+        "management.health.redis.enabled=false",
         "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration"
 })
 @Testcontainers
@@ -54,7 +56,20 @@ class BusQueryServiceIT {
         BusDetailDto d = service.detail("vie-vab1");
         assertThat(d.route()).isEqualTo("VAB 1");
         assertThat(d.stops()).containsExactly(
-                "维也纳西站 Westbahnhof", "维也纳中央车站 Hauptbahnhof (南入口)", "维也纳机场");
+                "维也纳机场", "维也纳中央车站 Hauptbahnhof (南入口)", "维也纳西站 Westbahnhof");
+    }
+
+    @Test
+    void searchByStopNameMatchesRoute() {
+        var r = service.search("中央车站");
+        assertThat(r.routes()).extracting(SearchResultDto.RouteHit::sourceId).contains("vie-vab1");
+    }
+
+    @Test
+    void blankSearchReturnsEmpty() {
+        var r = service.search("   ");
+        assertThat(r.airports()).isEmpty();
+        assertThat(r.routes()).isEmpty();
     }
 
     @Test

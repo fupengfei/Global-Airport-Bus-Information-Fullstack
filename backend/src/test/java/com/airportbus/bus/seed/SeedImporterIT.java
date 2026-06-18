@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "airportbus.seed.enabled=false",
         "spring.cache.type=none",
         "spring.data.redis.host=localhost",
+        "management.health.redis.enabled=false",
         "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration"
 })
 @Testcontainers

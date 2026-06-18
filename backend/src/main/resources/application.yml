@@ -16,6 +16,14 @@ mybatis:
   mapper-locations: classpath:mapper/*.xml
   configuration:
     map-underscore-to-camel-case: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health   # 仅暴露 /actuator/health 供容器健康检查
+  endpoint:
+    health:
+      show-details: never
 airportbus:
   seed:
     enabled: ${SEED_ENABLED:true}   # D4: 启动幂等导入开关

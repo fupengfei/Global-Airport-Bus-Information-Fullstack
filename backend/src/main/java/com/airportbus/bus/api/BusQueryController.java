@@ -2,6 +2,7 @@ package com.airportbus.bus.api;
 
 import com.airportbus.bus.api.dto.BusDetailDto;
 import com.airportbus.bus.api.dto.BusSummaryDto;
+import com.airportbus.bus.api.dto.SearchResultDto;
 import com.airportbus.bus.api.dto.TreeDto;
 import com.airportbus.bus.service.BusQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,5 +38,11 @@ public class BusQueryController {
     @GetMapping("/buses/{sourceId}")
     public BusDetailDto detail(@PathVariable String sourceId) {
         return service.detail(sourceId);
+    }
+
+    @Operation(summary = "搜索机场与按站点名匹配的线路")
+    @GetMapping("/search")
+    public SearchResultDto search(@RequestParam("q") String q) {
+        return service.search(q);
     }
 }

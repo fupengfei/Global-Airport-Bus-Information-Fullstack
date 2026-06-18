@@ -1,6 +1,7 @@
 package com.airportbus.bus.api;
 
 import com.airportbus.bus.api.dto.BusDetailDto;
+import com.airportbus.bus.api.dto.SearchResultDto;
 import com.airportbus.bus.mapper.BusQueryMapper;
 import com.airportbus.bus.mapper.BusWriteMapper;
 import com.airportbus.bus.mapper.SearchHotnessMapper;
@@ -43,6 +44,27 @@ class BusQueryControllerTest {
            .andExpect(status().isOk())
            .andExpect(jsonPath("$.sourceId").value("vie-vab1"))
            .andExpect(jsonPath("$.route").value("VAB 1"));
+    }
+
+    @Test
+    void searchReturnsAirportsAndRoutes() throws Exception {
+        when(service.search("中央")).thenReturn(new SearchResultDto(
+                List.of(new SearchResultDto.AirportHit("VIE", "维也纳国际机场", "Vienna", "AT")),
+                List.of(new SearchResultDto.RouteHit("vie-vab1", "VAB 1", "西站", "VIE", "维也纳中央车站 Hauptbahnhof (南入口)"))));
+        mvc.perform(get("/api/v1/search").param("q", "中央"))
+           .andExpect(status().isOk())
+           .andExpect(jsonPath("$.airports[0].code").value("VIE"))
+           .andExpect(jsonPath("$.routes[0].sourceId").value("vie-vab1"))
+           .andExpect(jsonPath("$.routes[0].matchedStop").value("维也纳中央车站 Hauptbahnhof (南入口)"));
+    }
+
+    @Test
+    void blankSearchReturnsEmpty() throws Exception {
+        when(service.search("")).thenReturn(new SearchResultDto(List.of(), List.of()));
+        mvc.perform(get("/api/v1/search").param("q", ""))
+           .andExpect(status().isOk())
+           .andExpect(jsonPath("$.airports").isEmpty())
+           .andExpect(jsonPath("$.routes").isEmpty());
     }
 
     @Test

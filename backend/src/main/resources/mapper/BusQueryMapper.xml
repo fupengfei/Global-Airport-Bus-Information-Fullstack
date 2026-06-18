@@ -32,6 +32,14 @@
     FROM bus_route WHERE source_id = #{sourceId}
   </select>
 
+  <select id="selectRouteAirportCity" resultType="com.airportbus.bus.mapper.BusQueryMapper$RouteAirport">
+    SELECT a.name AS airportName, ci.name AS cityName
+    FROM bus_route b
+    JOIN airport a ON a.id = b.airport_id
+    JOIN city ci   ON ci.id = a.city_id
+    WHERE b.source_id = #{sourceId} AND b.deleted = 0
+  </select>
+
   <select id="selectStops" resultType="java.lang.String">
     SELECT name FROM bus_stop WHERE bus_route_id = #{busId} ORDER BY seq
   </select>
@@ -48,5 +56,31 @@
   <select id="selectAlerts" resultType="com.airportbus.bus.api.dto.BusDetailDto$Alert">
     SELECT type, message, start_date AS startDate, end_date AS endDate
     FROM bus_alert WHERE bus_route_id = #{busId} ORDER BY id
+  </select>
+
+  <select id="searchAirports" resultType="com.airportbus.bus.api.dto.SearchResultDto$AirportHit">
+    SELECT a.code, a.name, ci.name AS cityName, co.code AS countryCode
+    FROM airport a
+    JOIN city ci    ON ci.id = a.city_id
+    JOIN country co ON co.id = ci.country_id
+    WHERE a.deleted = 0
+      AND (a.name LIKE CONCAT('%', #{q}, '%')
+        OR a.code LIKE CONCAT('%', #{q}, '%')
+        OR ci.name LIKE CONCAT('%', #{q}, '%'))
+    ORDER BY a.name
+    LIMIT 10
+  </select>
+
+  <select id="searchRoutesByStop" resultType="com.airportbus.bus.api.dto.SearchResultDto$RouteHit">
+    SELECT b.source_id AS sourceId, b.route, b.destination, a.code AS airportCode,
+           MIN(s.name) AS matchedStop
+    FROM bus_stop s
+    JOIN bus_route b ON b.id = s.bus_route_id
+    JOIN airport a   ON a.id = b.airport_id
+    WHERE s.deleted = 0 AND b.deleted = 0
+      AND s.name LIKE CONCAT('%', #{q}, '%')
+    GROUP BY b.source_id, b.route, b.destination, a.code
+    ORDER BY b.source_id
+    LIMIT 10
   </select>
 </mapper>
