@@ -5,6 +5,8 @@ import com.airportbus.bus.api.dto.SearchResultDto;
 import com.airportbus.bus.mapper.BusQueryMapper;
 import com.airportbus.bus.mapper.BusWriteMapper;
 import com.airportbus.bus.mapper.SearchHotnessMapper;
+import com.airportbus.user.mapper.RefreshTokenMapper;
+import com.airportbus.user.mapper.UserMapper;
 import com.airportbus.bus.service.BusQueryService;
 import com.airportbus.common.ApiException;
 import com.airportbus.common.ErrorCode;
@@ -34,6 +36,8 @@ class BusQueryControllerTest {
     @MockBean BusWriteMapper busWriteMapper;
     @MockBean BusQueryMapper busQueryMapper;
     @MockBean SearchHotnessMapper searchHotnessMapper;
+    @MockBean UserMapper userMapper;
+    @MockBean RefreshTokenMapper refreshTokenMapper;
 
     @Test
     void detailReturnsResourceBody() throws Exception {
