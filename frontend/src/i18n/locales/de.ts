@@ -31,4 +31,15 @@ export default {
   },
   state: { loading: 'Wird geladen…', error: 'Laden fehlgeschlagen, bitte erneut versuchen', empty: 'Keine Daten' },
   freshness: { updated: 'Zuletzt aktualisiert', fetchFailed: 'Abruf fehlgeschlagen, Infos evtl. veraltet' },
+  auth: {
+    login: 'Anmelden', register: 'Registrieren', logout: 'Abmelden', profile: 'Profil',
+    account: 'Benutzername / E-Mail', accountPh: 'Benutzername oder E-Mail', username: 'Benutzername', email: 'E-Mail',
+    password: 'Passwort', passwordPh: 'mind. 8 Zeichen', newPassword: 'Neues Passwort', oldPassword: 'Altes Passwort',
+    code: 'E-Mail-Code', codePh: '6-stelliger Code', getCode: 'Code anfordern', resendIn: 'Gesendet {s}s',
+    forgot: 'Vergessen?', forgotHint: 'E-Mail eingeben, wir senden einen Reset-Link.', forgotSent: 'Falls registriert, wurde ein Reset-Link gesendet.',
+    sendReset: 'Reset-Link senden', backLogin: 'Zurück zur Anmeldung',
+    resetTitle: 'Passwort zurücksetzen', resetNoToken: 'Ungültiger oder fehlender Token.', resetDone: 'Passwort zurückgesetzt, weiter zur Anmeldung.',
+    resetSubmit: 'Passwort zurücksetzen', changePw: 'Passwort ändern', pwChanged: 'Passwort geändert.',
+    genericError: 'Etwas ist schiefgelaufen, bitte erneut versuchen.',
+  },
 }
