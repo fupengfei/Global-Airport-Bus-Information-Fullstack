@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.airportbus.user.mapper.UserMapper">
+  <resultMap id="userMap" type="com.airportbus.user.model.AppUser">
+    <id property="id" column="id"/>
+    <result property="username" column="username"/>
+    <result property="email" column="email"/>
+    <result property="passwordHash" column="password_hash"/>
+    <result property="locale" column="locale"/>
+    <result property="role" column="role"/>
+    <result property="emailVerified" column="email_verified"/>
+  </resultMap>
+
+  <insert id="insertUser" parameterType="com.airportbus.user.model.AppUser" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO app_user (username, email, password_hash, locale, role, email_verified, created_by)
+    VALUES (#{username}, #{email}, #{passwordHash}, #{locale}, #{role}, #{emailVerified}, 'system')
+  </insert>
+
+  <select id="findById" resultMap="userMap">
+    SELECT * FROM app_user WHERE id = #{id} AND deleted = 0
+  </select>
+  <select id="findByUsername" resultMap="userMap">
+    SELECT * FROM app_user WHERE username = #{username} AND deleted = 0
+  </select>
+  <select id="findByEmail" resultMap="userMap">
+    SELECT * FROM app_user WHERE email = #{email} AND deleted = 0
+  </select>
+  <select id="findByAccount" resultMap="userMap">
+    SELECT * FROM app_user WHERE (username = #{account} OR email = #{account}) AND deleted = 0
+  </select>
+  <select id="existsByUsername" resultType="boolean">
+    SELECT COUNT(*) FROM app_user WHERE username = #{username} AND deleted = 0
+  </select>
+  <select id="existsByEmail" resultType="boolean">
+    SELECT COUNT(*) FROM app_user WHERE email = #{email} AND deleted = 0
+  </select>
+  <update id="updatePassword">
+    UPDATE app_user SET password_hash = #{hash}, updated_by = 'self' WHERE id = #{id} AND deleted = 0
+  </update>
+  <update id="updateLocale">
+    UPDATE app_user SET locale = #{locale}, updated_by = 'self' WHERE id = #{id} AND deleted = 0
+  </update>
+  <select id="findFirstByRole" resultMap="userMap">
+    SELECT * FROM app_user WHERE role = #{role} AND deleted = 0 ORDER BY id LIMIT 1
+  </select>
+</mapper>
