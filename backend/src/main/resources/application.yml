@@ -24,6 +24,9 @@ management:
   endpoint:
     health:
       show-details: never
+  health:
+    mail:
+      enabled: false   # 配了 SMTP 后,actuator 默认会连邮件服务器做健康检查,失败会拖垮 /actuator/health(及 docker healthcheck)
 airportbus:
   seed:
     enabled: ${SEED_ENABLED:true}   # D4: 启动幂等导入开关
