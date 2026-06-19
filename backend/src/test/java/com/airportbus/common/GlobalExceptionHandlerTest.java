@@ -3,6 +3,8 @@ package com.airportbus.common;
 import com.airportbus.bus.mapper.BusQueryMapper;
 import com.airportbus.bus.mapper.BusWriteMapper;
 import com.airportbus.bus.mapper.SearchHotnessMapper;
+import com.airportbus.user.mapper.RefreshTokenMapper;
+import com.airportbus.user.mapper.UserMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -32,6 +34,8 @@ class GlobalExceptionHandlerTest {
     @MockBean BusWriteMapper busWriteMapper;
     @MockBean BusQueryMapper busQueryMapper;
     @MockBean SearchHotnessMapper searchHotnessMapper;
+    @MockBean UserMapper userMapper;
+    @MockBean RefreshTokenMapper refreshTokenMapper;
 
     @Test
     void apiExceptionMapsToStatusAndEnvelope() throws Exception {

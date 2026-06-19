@@ -31,4 +31,15 @@ export default {
   },
   state: { loading: '加载中…', error: '加载失败,请重试', empty: '暂无数据' },
   freshness: { updated: '数据最后更新', fetchFailed: '抓取失败,信息可能过期' },
+  auth: {
+    login: '登录', register: '注册', logout: '登出', profile: '个人中心',
+    account: '用户名 / 邮箱', accountPh: '用户名或邮箱', username: '用户名', email: '邮箱',
+    password: '密码', passwordPh: '至少 8 位', newPassword: '新密码', oldPassword: '旧密码',
+    code: '邮箱验证码', codePh: '6 位验证码', getCode: '获取验证码', resendIn: '已发送 {s}s',
+    forgot: '忘记密码?', forgotHint: '输入注册邮箱,我们会发送重置链接。', forgotSent: '若邮箱已注册,重置链接已发送。',
+    sendReset: '发送重置链接', backLogin: '返回登录',
+    resetTitle: '重置密码', resetNoToken: '链接无效或缺少令牌。', resetDone: '密码已重置,即将跳转登录。',
+    resetSubmit: '重置密码', changePw: '修改密码', pwChanged: '密码已修改。',
+    genericError: '操作失败,请重试。',
+  },
 }

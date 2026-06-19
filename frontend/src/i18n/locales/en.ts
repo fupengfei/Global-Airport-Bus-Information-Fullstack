@@ -31,4 +31,15 @@ export default {
   },
   state: { loading: 'Loading…', error: 'Failed to load, please retry', empty: 'No data' },
   freshness: { updated: 'Last updated', fetchFailed: 'Fetch failed, info may be outdated' },
+  auth: {
+    login: 'Log in', register: 'Sign up', logout: 'Log out', profile: 'Profile',
+    account: 'Username / Email', accountPh: 'username or email', username: 'Username', email: 'Email',
+    password: 'Password', passwordPh: 'at least 8 chars', newPassword: 'New password', oldPassword: 'Old password',
+    code: 'Email code', codePh: '6-digit code', getCode: 'Get code', resendIn: 'Sent {s}s',
+    forgot: 'Forgot?', forgotHint: 'Enter your email and we will send a reset link.', forgotSent: 'If the email is registered, a reset link has been sent.',
+    sendReset: 'Send reset link', backLogin: 'Back to login',
+    resetTitle: 'Reset password', resetNoToken: 'Invalid or missing token.', resetDone: 'Password reset, redirecting to login.',
+    resetSubmit: 'Reset password', changePw: 'Change password', pwChanged: 'Password changed.',
+    genericError: 'Something went wrong, please retry.',
+  },
 }
