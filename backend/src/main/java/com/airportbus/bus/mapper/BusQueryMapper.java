@@ -13,6 +13,7 @@ public interface BusQueryMapper {
     List<BusSummaryDto> selectBusesByAirport(@Param("code") String airportCode);
 
     BusDetailDto.HeadRow selectBusHead(@Param("sourceId") String sourceId);
+    Long selectIdBySourceId(@Param("sourceId") String sourceId);
     RouteAirport selectRouteAirportCity(@Param("sourceId") String sourceId);
     List<String> selectStops(@Param("busId") Long busId);
     List<BusDetailDto.Schedule> selectSchedules(@Param("busId") Long busId);

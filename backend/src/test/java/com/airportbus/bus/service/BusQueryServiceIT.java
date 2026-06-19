@@ -76,4 +76,19 @@ class BusQueryServiceIT {
     void unknownBusThrowsNotFound() {
         assertThatThrownBy(() -> service.detail("nope-xxx")).isInstanceOf(ApiException.class);
     }
+
+    @Test
+    void requireBusRouteId_returnsId_forKnownSource() {
+        long id = service.requireBusRouteId("vie-vab1");
+        org.junit.jupiter.api.Assertions.assertTrue(id > 0);
+    }
+
+    @Test
+    void requireBusRouteId_throwsBusNotFound_forUnknown() {
+        com.airportbus.common.ApiException ex = org.junit.jupiter.api.Assertions.assertThrows(
+                com.airportbus.common.ApiException.class,
+                () -> service.requireBusRouteId("no-such-bus"));
+        org.junit.jupiter.api.Assertions.assertEquals(
+                com.airportbus.common.ErrorCode.BUS_NOT_FOUND, ex.code);
+    }
 }
