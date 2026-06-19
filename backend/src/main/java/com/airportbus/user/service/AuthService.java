@@ -10,6 +10,7 @@ import com.airportbus.user.model.AppUser;
 import com.airportbus.user.security.JwtPrincipal;
 import com.airportbus.user.security.JwtService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,7 +56,7 @@ public class AuthService {
         if (users.existsByEmail(email)) throw new ApiException(ErrorCode.EMAIL_TAKEN, "email taken");
         if (!cache.canSendRegisterCode(email)) throw new ApiException(ErrorCode.RATE_LIMITED, "try later");
         String code = cache.issueRegisterCode(email);
-        mailer.send(email, "你的注册验证码", "验证码:" + code + "(10 分钟内有效)");
+        sendMail(email, "你的注册验证码", "验证码:" + code + "(10 分钟内有效)");
         return new Sent(true);
     }
 
@@ -113,7 +114,7 @@ public class AuthService {
         AppUser u = users.findByEmail(email);
         if (u != null) {
             String token = cache.issueResetToken(u.id);
-            mailer.send(email, "重置你的密码",
+            sendMail(email, "重置你的密码",
                     "点此重置(30 分钟内有效):" + appBaseUrl + "/reset-password?token=" + token);
         }
         return new Sent(true); // 不泄露邮箱是否注册
@@ -154,6 +155,14 @@ public class AuthService {
     }
 
     // ── 内部 ──
+    private void sendMail(String to, String subject, String body) {
+        try {
+            mailer.send(to, subject, body);
+        } catch (MailException e) {
+            throw new ApiException(ErrorCode.MAIL_SEND_FAILED, "邮件发送失败,请稍后重试");
+        }
+    }
+
     private TokenPair issueTokens(long userId, String role) {
         String access = jwt.issueAccess(userId, role);
         byte[] b = new byte[32]; rnd.nextBytes(b);

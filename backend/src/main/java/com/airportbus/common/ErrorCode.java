@@ -15,6 +15,7 @@ public enum ErrorCode {
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED),
     RATE_LIMITED(HttpStatus.TOO_MANY_REQUESTS),
+    MAIL_SEND_FAILED(HttpStatus.BAD_GATEWAY),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR);
 
     public final HttpStatus status;
