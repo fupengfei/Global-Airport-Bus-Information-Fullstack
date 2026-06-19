@@ -40,6 +40,13 @@ docker compose up -d --build      # mysql + redis + 后端 + 前端
 
 种子数据(维也纳/上海)在后端首启时幂等导入(`SEED_ENABLED=true`)。
 
+### 用户系统(注册 / 登录 / 找回密码)
+
+- **种子管理员**:首启在 `SEED_ENABLED=true` 下幂等建一个 SUPER_ADMIN,账号密码**打印在后端控制台**(默认 `admin` / `admin12345`,可用 `airportbus.seed.admin-username` / `airportbus.seed.admin-password` 覆盖)。
+- **邮件(验证码 / 重置链接)默认走 dev 控制台**:不配 SMTP 时,注册验证码与找回密码重置链接**打印到后端控制台**(`==== DEV MAIL ====`),本地无需真实邮箱即可走通注册/找回。配置 `spring.mail.host` 等即自动切换为真实 SMTP 发送。
+- 鉴权:JWT(短期 access + 可撤销 refresh,刷新轮换);登录失败 Redis 限流;查询主线仍全程零登录。
+- 端点前缀 `/api/v1/auth/*`(register/login/refresh/logout/password),个人中心 `/api/v1/me`。前端页:`/login`、`/reset-password`、`/me`。
+
 ### 本地开发(热重载)
 
 ```bash

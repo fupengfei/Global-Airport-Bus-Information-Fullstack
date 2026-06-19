@@ -152,6 +152,38 @@ docker compose up -d --build
 
 ---
 
+## #4 用户鉴权模块(#2 登录注册)
+
+- **日期**:2026-06-19
+- **状态**:✅ 已交付(后端 16 单测/切片 + 23 集成绿;前端 13 测试 + 构建绿;opencli 真实浏览器端到端通过)
+- **分支**:`feat/user-auth`
+- **设计/计划**:[docs/superpowers/specs/2026-06-19-user-auth-design.md](docs/superpowers/specs/2026-06-19-user-auth-design.md)、[docs/superpowers/plans/2026-06-19-user-auth.md](docs/superpowers/plans/2026-06-19-user-auth.md)
+
+### 现象 / 背景
+用户首版反馈「登陆注册无法使用」——此前仅有查询主线,**完全没有 user 模块**(后端无 `user` 包、前端无登录页)。
+
+### 修复(新增 `com.airportbus.user` 模块)
+- 手写 JWT(`jjwt`)+ BCrypt(`spring-security-crypto`)+ `OncePerRequestFilter` 仅在带 Bearer 时解析主体放 ThreadLocal;**不引入完整 spring-security**,保证查询主线零登录不被默认拦截。
+- V3 迁移 `app_user` + `refresh_token`(refresh 哈希存库、可撤销、刷新轮换,E9)。
+- Redis:注册验证码(10min,60s 重发限流)、找回密码重置令牌(30min)、登录失败限流。
+- 端点 `/api/v1/auth/{register/code,register,login,refresh,logout,password/forgot,password/reset}` + `/api/v1/me`(GET/PATCH/POST password)。错误走现有 `{code,message,details,traceId}` 信封 + 真实状态码(409/401/400/429)。
+- 邮件 `Mailer` 抽象:默认 `ConsoleMailer`(dev 打印),配 `spring.mail.host` 切 `SmtpMailer`。
+- 启动幂等种子 SUPER_ADMIN 并打印账号(D4)。
+- 前端:Pinia `auth` store + axios 401 刷新轮换拦截器 + `/login`(登录/注册/找回三 tab)、`/reset-password`、`/me` + 顶栏登录态 + 三语(中/英/德)文案。
+
+### 连带修复
+- **`@WebMvcTest` 切片回归**:新增 `UserMapper`/`RefreshTokenMapper` 后,`@MapperScan` 让两个 mapper 进入 web 切片但无 `sqlSessionFactory` → `BusQueryControllerTest`/`GlobalExceptionHandlerTest` 报 `Property 'sqlSessionFactory' or 'sqlSessionTemplate' are required`。修复:两个切片补 `@MockBean UserMapper/RefreshTokenMapper`(沿用既有「切片要 mock 所有 mapper」约定)。
+
+### 验证
+- 后端:`mvn test` 16 绿;`mvn -Dtest='*IT' test` 23 绿(JWT/缓存/AuthService/全栈 AuthFlow,Testcontainers 真 MySQL+Redis)。
+- API 实跑:登录 admin → `/me`(SUPER_ADMIN);无 token → 401 `UNAUTHORIZED` 信封;发码→注册自动登录→登录;找回返回 `{sent:true}`。
+- opencli 真实 Chrome:`/login` 登录 → 顶栏出用户名 → `/me` 显示资料 → 登出回到「登录/注册」→ 未登录开 `/me` 跳 `/login`。
+
+### 不做(后续)
+- 收藏=订阅(#3)、站内信/变更推送、admin 后台(#7)、第三方 OAuth。design.md 原记「MVP 不做邮箱验证/找回」,本期按 CLAUDE.md + login.html 原型(优先级更高)实现了二者。
+
+---
+
 ## 已知但尚未修复
 
 ### N1 404 被伪装成 500
