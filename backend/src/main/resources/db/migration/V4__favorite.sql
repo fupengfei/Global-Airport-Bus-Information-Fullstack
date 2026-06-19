@@ -10,5 +10,6 @@ CREATE TABLE favorite (
   deleted       TINYINT(1)  NOT NULL DEFAULT 0                    COMMENT '逻辑删除/收藏态:0=已收藏,1=已取消',
   UNIQUE KEY uk_fav_user_bus (user_id, bus_route_id),
   KEY idx_fav_user (user_id),
-  CONSTRAINT fk_fav_user FOREIGN KEY (user_id) REFERENCES app_user(id)
+  CONSTRAINT fk_fav_user FOREIGN KEY (user_id) REFERENCES app_user(id),
+  CONSTRAINT fk_fav_bus FOREIGN KEY (bus_route_id) REFERENCES bus_route(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户收藏(=订阅)巴士线路';
