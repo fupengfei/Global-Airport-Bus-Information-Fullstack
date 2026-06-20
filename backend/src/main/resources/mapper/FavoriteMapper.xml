@@ -21,4 +21,51 @@
     WHERE f.user_id = #{userId} AND f.deleted = 0
     ORDER BY f.updated_at DESC
   </select>
+
+  <select id="countFavorites" resultType="long">
+    SELECT COUNT(*) FROM favorite WHERE deleted = 0
+  </select>
+
+  <select id="countFavoritesSince" resultType="long">
+    SELECT COUNT(*) FROM favorite WHERE deleted = 0 AND created_at &gt;= #{since}
+  </select>
+
+  <select id="topRoutes" resultType="com.airportbus.user.mapper.FavoriteMapper$RouteSub">
+    SELECT br.source_id AS busSourceId, br.route AS route, br.destination AS destination,
+           a.code AS airportCode, ci.name AS cityName,
+           COUNT(*) AS favoriteCount, COUNT(*) AS notifyCount
+    FROM favorite f
+    JOIN bus_route br ON br.id = f.bus_route_id AND br.deleted = 0
+    JOIN airport a    ON a.id = br.airport_id  AND a.deleted = 0
+    JOIN city ci      ON ci.id = a.city_id     AND ci.deleted = 0
+    WHERE f.deleted = 0
+    GROUP BY br.id, br.source_id, br.route, br.destination, a.code, ci.name
+    ORDER BY favoriteCount DESC, br.source_id ASC
+    LIMIT #{limit}
+  </select>
+
+  <select id="topAirports" resultType="com.airportbus.user.mapper.FavoriteMapper$AirportSub">
+    SELECT a.code AS airportCode, a.name AS airportName, ci.name AS cityName, COUNT(*) AS favoriteCount
+    FROM favorite f
+    JOIN bus_route br ON br.id = f.bus_route_id AND br.deleted = 0
+    JOIN airport a    ON a.id = br.airport_id  AND a.deleted = 0
+    JOIN city ci      ON ci.id = a.city_id     AND ci.deleted = 0
+    WHERE f.deleted = 0
+    GROUP BY a.id, a.code, a.name, ci.name
+    ORDER BY favoriteCount DESC, a.code ASC
+    LIMIT #{limit}
+  </select>
+
+  <select id="topCities" resultType="com.airportbus.user.mapper.FavoriteMapper$CitySub">
+    SELECT ci.name AS cityName, co.name AS countryName, COUNT(*) AS favoriteCount
+    FROM favorite f
+    JOIN bus_route br ON br.id = f.bus_route_id AND br.deleted = 0
+    JOIN airport a    ON a.id = br.airport_id  AND a.deleted = 0
+    JOIN city ci      ON ci.id = a.city_id     AND ci.deleted = 0
+    JOIN country co   ON co.id = ci.country_id AND co.deleted = 0
+    WHERE f.deleted = 0
+    GROUP BY ci.id, ci.name, co.name
+    ORDER BY favoriteCount DESC, ci.name ASC
+    LIMIT #{limit}
+  </select>
 </mapper>

@@ -20,4 +20,17 @@
     VALUES(#{airportId}, #{day}, #{delta})
     ON DUPLICATE KEY UPDATE cnt = cnt + #{delta}
   </insert>
+
+  <select id="ranking" resultType="com.airportbus.bus.mapper.SearchHotnessMapper$HotnessRow">
+    SELECT a.code AS airportCode, a.name AS airportName, ci.name AS cityName,
+           COALESCE(SUM(s.cnt), 0) AS views
+    FROM airport_search_stat s
+    JOIN airport a ON a.id = s.airport_id AND a.deleted = 0
+    JOIN city ci   ON ci.id = a.city_id   AND ci.deleted = 0
+    WHERE s.deleted = 0
+    <if test="since != null"> AND s.day &gt;= #{since} </if>
+    GROUP BY a.id, a.code, a.name, ci.name
+    ORDER BY views DESC, a.code ASC
+    LIMIT #{limit}
+  </select>
 </mapper>

@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { adminGuard } from './adminGuard'
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -9,5 +10,15 @@ export const router = createRouter({
     { path: '/login', name: 'login', component: () => import('../pages/LoginPage.vue') },
     { path: '/reset-password', name: 'reset', component: () => import('../pages/ResetPasswordPage.vue') },
     { path: '/me', name: 'me', component: () => import('../pages/MePage.vue') },
+    {
+      path: '/admin',
+      component: () => import('../components/admin/AdminLayout.vue'),
+      beforeEnter: adminGuard,
+      children: [
+        { path: '', name: 'admin-overview', component: () => import('../pages/admin/AdminOverviewPage.vue') },
+        { path: 'subscriptions', name: 'admin-subscriptions', component: () => import('../pages/admin/AdminSubscriptionsPage.vue') },
+        { path: 'hotness', name: 'admin-hotness', component: () => import('../pages/admin/AdminHotnessPage.vue') },
+      ],
+    },
   ],
 })

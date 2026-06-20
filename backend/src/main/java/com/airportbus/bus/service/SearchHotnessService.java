@@ -51,6 +51,18 @@ public class SearchHotnessService {
         }
     }
 
+    /** 后台榜单:window ∈ {"7d","30d","all"},其余按 7d 兜底。 */
+    public java.util.List<SearchHotnessMapper.HotnessRow> ranking(String window, int limit) {
+        int cap = limit < 1 ? 20 : Math.min(limit, 100);
+        return mapper.ranking(windowSince(window), cap);
+    }
+
+    private static java.time.LocalDate windowSince(String window) {
+        if ("all".equals(window)) return null;
+        if ("30d".equals(window)) return java.time.LocalDate.now().minusDays(29);
+        return java.time.LocalDate.now().minusDays(6); // "7d" 及兜底
+    }
+
     /**
      * 周期落库:把 Redis 中每个机场的增量按天 upsert 进 airport_search_stat。
      *

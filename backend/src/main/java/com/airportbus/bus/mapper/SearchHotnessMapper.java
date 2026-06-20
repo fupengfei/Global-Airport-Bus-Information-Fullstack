@@ -17,4 +17,10 @@ public interface SearchHotnessMapper {
     void upsertStat(@Param("airportId") long airportId,
                     @Param("day") LocalDate day,
                     @Param("delta") long delta);
+
+    /** 按窗口汇总各机场搜索量,降序。since 为 null 表示「全部时间」。 */
+    java.util.List<HotnessRow> ranking(@Param("since") java.time.LocalDate since,
+                                       @Param("limit") int limit);
+
+    record HotnessRow(String airportCode, String airportName, String cityName, long views) {}
 }
