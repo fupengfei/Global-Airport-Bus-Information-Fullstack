@@ -49,4 +49,13 @@ describe('adminGuard', () => {
     expect(auth.loadMe).toHaveBeenCalled()
     expect(res).toBe(true)
   })
+
+  it('falls back to login when loadMe throws', async () => {
+    const auth = useAuth()
+    auth.accessToken = 'stale'
+    auth.user = null
+    vi.spyOn(auth, 'loadMe').mockRejectedValue(new Error('401'))
+    const res = await adminGuard(to)
+    expect(res).toEqual({ name: 'login', query: { redirect: '/admin' } })
+  })
 })
