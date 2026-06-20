@@ -21,7 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
         "airportbus.seed.enabled=true",
         "spring.cache.type=none",
         "management.health.redis.enabled=false",
-        "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration"
+        "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration",
+        "airportbus.hotness.flush-delay-ms=3600000"
 })
 @Testcontainers
 class HotnessRankingIT {
@@ -61,7 +62,7 @@ class HotnessRankingIT {
     }
 
     @Test
-    void ranking_emptyWhenNoStats_isHandled() {
+    void ranking_returnsNonNullList() {
         List<SearchHotnessMapper.HotnessRow> rows = service.ranking("7d", 20);
         assertThat(rows).isNotNull();
     }
