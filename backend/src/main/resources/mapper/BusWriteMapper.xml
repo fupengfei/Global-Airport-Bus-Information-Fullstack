@@ -84,4 +84,19 @@
     UPDATE bus_route SET deleted=1, updated_by=#{actor}
     WHERE source_id=#{sourceId} AND deleted=0
   </update>
+
+  <select id="selectAirportIdBySource" resultType="int">
+    SELECT a.id FROM bus_route b JOIN airport a ON a.id=b.airport_id
+    WHERE b.source_id=#{sourceId} AND b.deleted=0
+  </select>
+
+  <select id="selectAirportCodeById" resultType="string">
+    SELECT code FROM airport WHERE id=#{airportId}
+  </select>
+
+  <select id="selectAdminMeta" resultType="com.airportbus.bus.mapper.BusWriteMapper$AdminMeta">
+    SELECT a.code AS airportCode, b.last_verified_at AS lastVerifiedAt
+    FROM bus_route b JOIN airport a ON a.id=b.airport_id
+    WHERE b.source_id=#{sourceId} AND b.deleted=0
+  </select>
 </mapper>

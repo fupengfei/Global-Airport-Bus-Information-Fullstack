@@ -46,4 +46,15 @@ public interface BusWriteMapper {
     void softDeleteBus(@Param("sourceId") String sourceId, @Param("actor") String actor);
 
     record VersionHash(int version, String contentHash) {}
+
+    /** 通过 source_id 查 airport 内部数字 id(rollback 时用)。 */
+    int selectAirportIdBySource(@Param("sourceId") String sourceId);
+
+    /** 通过 airport id 查 IATA code。 */
+    String selectAirportCodeById(@Param("airportId") long airportId);
+
+    /** 查 admin 视图额外元数据:机场 code + 最后核对时间。 */
+    AdminMeta selectAdminMeta(@Param("sourceId") String sourceId);
+
+    record AdminMeta(String airportCode, java.time.LocalDateTime lastVerifiedAt) {}
 }
