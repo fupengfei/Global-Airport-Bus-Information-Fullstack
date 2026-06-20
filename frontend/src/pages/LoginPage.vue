@@ -13,7 +13,9 @@ const auth = useAuth()
 
 function go() {
   const r = route.query.redirect
-  router.push(typeof r === 'string' && r ? r : '/')
+  // 只接受站内绝对路径(/ 开头且非 //),挡掉开放重定向到外站
+  const safe = typeof r === 'string' && r.startsWith('/') && !r.startsWith('//') ? r : '/'
+  router.push(safe)
 }
 
 const tab = ref<'login' | 'register' | 'forgot'>('login')
