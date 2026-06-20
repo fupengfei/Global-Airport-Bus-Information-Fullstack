@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { createI18n } from 'vue-i18n'
 import { setActivePinia, createPinia } from 'pinia'
 import zhCN from '../i18n/locales/zh-CN'
@@ -49,5 +49,7 @@ describe('BusCard favorite heart', () => {
     const w = mountCard()
     await w.find('.favBtn').trigger('click')
     expect(favApi.favorite).toHaveBeenCalledWith('vie-vab1')
+    await flushPromises()
+    expect(w.find('.favBtn').classes()).toContain('favOn')
   })
 })

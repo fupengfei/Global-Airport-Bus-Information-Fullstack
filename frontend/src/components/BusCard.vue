@@ -48,6 +48,7 @@ const hasSchedules = computed(() => props.bus.schedules.length > 0)
           class="favBtn"
           :class="{ favOn: faved }"
           :aria-pressed="faved"
+          :aria-label="auth.isAuthed ? (faved ? t('favorite.remove') : t('favorite.add')) : t('favorite.loginPrompt')"
           :title="auth.isAuthed ? (faved ? t('favorite.remove') : t('favorite.add')) : t('favorite.loginPrompt')"
           @click="onFav"
         >{{ faved ? '♥' : '♡' }}</button>
@@ -134,7 +135,7 @@ const hasSchedules = computed(() => props.bus.schedules.length > 0)
 .topRight { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
 .favBtn {
   border: none; background: none; cursor: pointer; line-height: 1;
-  font-size: 22px; color: var(--muted, #9aa0a6); padding: 2px 4px;
+  font-size: 22px; color: var(--ink-faint); padding: 2px 4px;
 }
 .favBtn.favOn { color: #e0245e; }
 </style>
