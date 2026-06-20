@@ -16,11 +16,12 @@ const auth = useAuth()
 const oldPw = ref(''); const newPw = ref(''); const msg = ref(''); const err = ref('')
 const favorites = ref<BusDetail[]>([])
 const favLoading = ref(true)
+const favError = ref(false)
 
 onMounted(async () => {
   if (!auth.isAuthed) { router.push('/login'); return }
   if (!auth.user) { try { await auth.loadMe() } catch { /* 401 拦截器处理 */ } }
-  try { favorites.value = await listFavorites() } catch { /* 忽略 */ } finally { favLoading.value = false }
+  try { favorites.value = await listFavorites() } catch { favError.value = true } finally { favLoading.value = false }
 })
 
 async function changePw() {
@@ -40,7 +41,7 @@ async function doLogout() { await auth.logout(); router.push('/') }
     <p><strong>{{ t('auth.email') }}:</strong> {{ auth.user.email }}</p>
 
     <h3>{{ t('favorite.mine') }}</h3>
-    <StateBlock :loading="favLoading" :empty="!favLoading && favorites.length === 0" :empty-text="t('favorite.empty')">
+    <StateBlock :loading="favLoading" :error="favError" :empty="!favLoading && !favError && favorites.length === 0" :empty-text="t('favorite.empty')">
       <BusCard v-for="b in favorites" :key="b.sourceId" :bus="b" :detail-link="true" />
     </StateBlock>
 
