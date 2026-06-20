@@ -21,7 +21,13 @@ describe('favorites store', () => {
 
   it('toggle adds optimistically then calls favorite()', async () => {
     const s = useFavorites()
+    let stateWhenCalled: boolean | undefined
+    ;(api.favorite as any).mockImplementationOnce((sourceId: string) => {
+      stateWhenCalled = s.isFavorited(sourceId) // 调用 favorite() 的瞬间,本地态必须已置位(乐观)
+      return Promise.resolve({ favorited: true })
+    })
     await s.toggle('pvg-line4')
+    expect(stateWhenCalled).toBe(true)          // 证明先更新本地、再发请求
     expect(s.isFavorited('pvg-line4')).toBe(true)
     expect(api.favorite).toHaveBeenCalledWith('pvg-line4')
   })
