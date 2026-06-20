@@ -29,6 +29,7 @@ export default {
     schedAllDay: 'All day', noSchedule: 'No schedule info',
     viewDetail: 'View details',
   },
+  favorite: { add: 'Save', remove: 'Unsave', loginPrompt: 'Log in to save routes', mine: 'My favorites', empty: 'No saved routes yet.' },
   state: { loading: 'Loading…', error: 'Failed to load, please retry', empty: 'No data' },
   freshness: { updated: 'Last updated', fetchFailed: 'Fetch failed, info may be outdated' },
   auth: {
