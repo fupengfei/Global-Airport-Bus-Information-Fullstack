@@ -1,0 +1,17 @@
+import { describe, it, expect } from 'vitest'
+import { mount, RouterLinkStub } from '@vue/test-utils'
+import AdminLayout from '../components/admin/AdminLayout.vue'
+
+describe('AdminLayout', () => {
+  it('renders the three nav entries', () => {
+    const wrapper = mount(AdminLayout, {
+      global: {
+        stubs: { 'router-link': RouterLinkStub, 'router-view': { template: '<div />' } },
+      },
+    })
+    const text = wrapper.text()
+    expect(text).toContain('概览')
+    expect(text).toContain('订阅统计')
+    expect(text).toContain('热度榜单')
+  })
+})
