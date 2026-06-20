@@ -24,6 +24,7 @@ export const useAuth = defineStore('auth', {
       this.user = null
       localStorage.removeItem('accessToken')
       localStorage.removeItem('refreshToken')
+      import('./favorites').then((m) => m.useFavorites().clear())
     },
     async login(account: string, password: string) {
       this.setTokens(await api.login(account, password))
@@ -35,6 +36,8 @@ export const useAuth = defineStore('auth', {
     },
     async loadMe() {
       this.user = await api.getMe()
+      const { useFavorites } = await import('./favorites')
+      try { await useFavorites().load() } catch { /* 收藏加载失败不阻塞登录 */ }
     },
     async logout() {
       if (this.refreshToken) {

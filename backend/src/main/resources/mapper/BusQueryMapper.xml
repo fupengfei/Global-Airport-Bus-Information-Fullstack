@@ -32,6 +32,10 @@
     FROM bus_route WHERE source_id = #{sourceId}
   </select>
 
+  <select id="selectIdBySourceId" resultType="long">
+    SELECT id FROM bus_route WHERE source_id = #{sourceId} AND deleted = 0
+  </select>
+
   <select id="selectRouteAirportCity" resultType="com.airportbus.bus.mapper.BusQueryMapper$RouteAirport">
     SELECT a.name AS airportName, ci.name AS cityName
     FROM bus_route b

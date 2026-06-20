@@ -7,7 +7,7 @@ import zhCN from '../i18n/locales/zh-CN'
 const loginFn = vi.fn(() => Promise.resolve())
 vi.mock('../stores/auth', () => ({ useAuth: () => ({ login: loginFn, register: vi.fn() }) }))
 vi.mock('../api/auth', () => ({ sendRegisterCode: vi.fn(), forgot: vi.fn() }))
-vi.mock('vue-router', () => ({ useRouter: () => ({ push: vi.fn() }) }))
+vi.mock('vue-router', () => ({ useRouter: () => ({ push: vi.fn() }), useRoute: () => ({ query: {} }) }))
 
 import LoginPage from '../pages/LoginPage.vue'
 

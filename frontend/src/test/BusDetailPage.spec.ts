@@ -1,6 +1,7 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createI18n } from 'vue-i18n'
+import { setActivePinia, createPinia } from 'pinia'
 import { VueQueryPlugin } from '@tanstack/vue-query'
 import zhCN from '../i18n/locales/zh-CN'
 
@@ -16,12 +17,20 @@ vi.mock('../api/bus', () => ({
   }),
 }))
 
+vi.mock('vue-router', () => ({ useRouter: () => ({ push: vi.fn() }), useRoute: () => ({ fullPath: '/bus/vie-vab1' }) }))
+vi.mock('../api/favorites', () => ({
+  listFavoriteIds: vi.fn(() => Promise.resolve([])),
+  favorite: vi.fn(), unfavorite: vi.fn(),
+}))
+
 import BusDetailPage from '../pages/BusDetailPage.vue'
 
 const i18n = createI18n({ legacy: false, locale: 'zh-CN', messages: { 'zh-CN': zhCN } })
 const stubs = { 'router-link': { template: '<a><slot /></a>' } }
 
 describe('BusDetailPage', () => {
+  beforeEach(() => { setActivePinia(createPinia()) })
+
   it('shows decision bar fields and stops', async () => {
     const wrapper = mount(BusDetailPage, {
       props: { sourceId: 'vie-vab1' },

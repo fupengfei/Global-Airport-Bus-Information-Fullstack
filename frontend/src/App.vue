@@ -1,9 +1,15 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { setLocale } from './i18n'
 import { useAuth } from './stores/auth'
+import { useFavorites } from './stores/favorites'
 const { t, locale } = useI18n()
 const auth = useAuth()
+
+onMounted(() => {
+  if (auth.isAuthed) useFavorites().load().catch(() => { /* 忽略 */ })
+})
 </script>
 
 <template>

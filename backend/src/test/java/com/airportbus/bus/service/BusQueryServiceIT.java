@@ -4,6 +4,7 @@ import com.airportbus.bus.api.dto.BusDetailDto;
 import com.airportbus.bus.api.dto.SearchResultDto;
 import com.airportbus.bus.seed.SeedImporter;
 import com.airportbus.common.ApiException;
+import com.airportbus.common.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,5 +76,17 @@ class BusQueryServiceIT {
     @Test
     void unknownBusThrowsNotFound() {
         assertThatThrownBy(() -> service.detail("nope-xxx")).isInstanceOf(ApiException.class);
+    }
+
+    @Test
+    void requireBusRouteId_returnsId_forKnownSource() {
+        assertThat(service.requireBusRouteId("vie-vab1")).isPositive();
+    }
+
+    @Test
+    void requireBusRouteId_throwsBusNotFound_forUnknown() {
+        assertThatThrownBy(() -> service.requireBusRouteId("no-such-bus"))
+                .isInstanceOfSatisfying(ApiException.class,
+                        ex -> assertThat(ex.code).isEqualTo(ErrorCode.BUS_NOT_FOUND));
     }
 }

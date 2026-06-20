@@ -29,6 +29,7 @@ export default {
     schedAllDay: '全天', noSchedule: '暂无班次信息',
     viewDetail: '查询详情',
   },
+  favorite: { add: '收藏', remove: '取消收藏', loginPrompt: '登录后即可收藏线路', mine: '我的收藏', empty: '还没有收藏任何线路。' },
   state: { loading: '加载中…', error: '加载失败,请重试', empty: '暂无数据' },
   freshness: { updated: '数据最后更新', fetchFailed: '抓取失败,信息可能过期' },
   auth: {

@@ -1,6 +1,7 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createI18n } from 'vue-i18n'
+import { setActivePinia, createPinia } from 'pinia'
 import { VueQueryPlugin } from '@tanstack/vue-query'
 import zhCN from '../i18n/locales/zh-CN'
 import en from '../i18n/locales/en'
@@ -33,7 +34,12 @@ vi.mock('../api/bus', () => ({
   search: vi.fn(() => Promise.resolve({ airports: [], routes: [] })),
 }))
 
-vi.mock('vue-router', () => ({ useRouter: () => ({ push: vi.fn() }) }))
+vi.mock('../api/favorites', () => ({
+  listFavoriteIds: vi.fn(() => Promise.resolve([])),
+  favorite: vi.fn(), unfavorite: vi.fn(),
+}))
+
+vi.mock('vue-router', () => ({ useRouter: () => ({ push: vi.fn() }), useRoute: () => ({ fullPath: '/' }) }))
 
 import HomePage from '../pages/HomePage.vue'
 
@@ -48,6 +54,8 @@ function mountHome() {
 }
 
 describe('HomePage', () => {
+  beforeEach(() => { setActivePinia(createPinia()) })
+
   it('renders the selector and the country/city/airport from the tree', async () => {
     const wrapper = mountHome()
     await flushPromises()

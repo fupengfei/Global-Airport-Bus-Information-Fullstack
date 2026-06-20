@@ -29,6 +29,7 @@ export default {
     schedAllDay: 'Ganztägig', noSchedule: 'Keine Fahrplandaten',
     viewDetail: 'Details ansehen',
   },
+  favorite: { add: 'Merken', remove: 'Entfernen', loginPrompt: 'Zum Merken anmelden', mine: 'Meine Favoriten', empty: 'Noch keine gemerkten Linien.' },
   state: { loading: 'Wird geladen…', error: 'Laden fehlgeschlagen, bitte erneut versuchen', empty: 'Keine Daten' },
   freshness: { updated: 'Zuletzt aktualisiert', fetchFailed: 'Abruf fehlgeschlagen, Infos evtl. veraltet' },
   auth: {

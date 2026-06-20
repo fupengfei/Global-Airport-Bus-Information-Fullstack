@@ -81,6 +81,13 @@ public class BusQueryService {
                 mapper.selectAlerts(h.id()));
     }
 
+    /** source_id → 内部 bus_route_id;不存在或已删除抛 BUS_NOT_FOUND(404)。收藏模块跨模块复用。 */
+    public long requireBusRouteId(String sourceId) {
+        Long id = mapper.selectIdBySourceId(sourceId);
+        if (id == null) throw new ApiException(ErrorCode.BUS_NOT_FOUND, "no bus: " + sourceId);
+        return id;
+    }
+
     private static final class TreeAcc {
         final String name;
         final Map<String, List<TreeDto.Airport>> cities = new LinkedHashMap<>();

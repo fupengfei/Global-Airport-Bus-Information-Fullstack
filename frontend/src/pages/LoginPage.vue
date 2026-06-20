@@ -1,14 +1,22 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '../stores/auth'
 import { sendRegisterCode, forgot } from '../api/auth'
 import { asApiError } from '../api/client'
 
 const { t } = useI18n()
 const router = useRouter()
+const route = useRoute()
 const auth = useAuth()
+
+function go() {
+  const r = route.query.redirect
+  // 只接受站内绝对路径(/ 开头且非 //),挡掉开放重定向到外站
+  const safe = typeof r === 'string' && r.startsWith('/') && !r.startsWith('//') ? r : '/'
+  router.push(safe)
+}
 
 const tab = ref<'login' | 'register' | 'forgot'>('login')
 const err = ref('')
@@ -23,7 +31,7 @@ function fail(e: unknown) { err.value = asApiError(e)?.message ?? t('auth.generi
 
 async function doLogin() {
   err.value = ''; busy.value = true
-  try { await auth.login(account.value, password.value); router.push('/') }
+  try { await auth.login(account.value, password.value); go() }
   catch (e) { fail(e) } finally { busy.value = false }
 }
 async function getCode() {
@@ -36,7 +44,7 @@ async function getCode() {
 }
 async function doRegister() {
   err.value = ''; busy.value = true
-  try { await auth.register({ username: ru.value, email: re.value, code: rc.value, password: rp.value }); router.push('/') }
+  try { await auth.register({ username: ru.value, email: re.value, code: rc.value, password: rp.value }); go() }
   catch (e) { fail(e) } finally { busy.value = false }
 }
 async function doForgot() {

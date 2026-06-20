@@ -1,12 +1,28 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter, useRoute } from 'vue-router'
 import type { BusDetail } from '../api/bus'
+import { useAuth } from '../stores/auth'
+import { useFavorites } from '../stores/favorites'
 import AlertList from './AlertList.vue'
 import FreshnessBadge from './FreshnessBadge.vue'
 
 const props = defineProps<{ bus: BusDetail; detailLink?: boolean }>()
 const { t } = useI18n()
+
+const auth = useAuth()
+const favs = useFavorites()
+const router = useRouter()
+const route = useRoute()
+const faved = computed(() => favs.isFavorited(props.bus.sourceId))
+async function onFav() {
+  if (!auth.isAuthed) {
+    router.push({ name: 'login', query: { redirect: route.fullPath } })
+    return
+  }
+  try { await favs.toggle(props.bus.sourceId) } catch { /* 401 由拦截器处理,其余忽略 */ }
+}
 
 // price 在设计稿里拆成「主价 / small 副价」,但 BusDetail.price 只是一段展示文本。
 // 取第一行作为主价,其余作为 small,既忠实视觉又不伪造结构。
@@ -20,15 +36,25 @@ const hasSchedules = computed(() => props.bus.schedules.length > 0)
 
 <template>
   <article class="card">
-    <!-- 头部:route → dest → operator;右侧价格(本期无收藏按钮) -->
+    <!-- 头部:route → dest → operator;右侧收藏心 + 价格 -->
     <div class="card__top">
       <div>
         <div class="route">{{ bus.route }}</div>
         <div class="dest">{{ bus.destination ?? bus.route }}</div>
         <div v-if="bus.operator" class="operator">{{ bus.operator }}</div>
       </div>
-      <div v-if="priceMain" class="price">
-        {{ priceMain }}<small v-if="priceSub">{{ priceSub }}</small>
+      <div class="topRight">
+        <button
+          class="favBtn"
+          :class="{ favOn: faved }"
+          :aria-pressed="faved"
+          :aria-label="auth.isAuthed ? (faved ? t('favorite.remove') : t('favorite.add')) : t('favorite.loginPrompt')"
+          :title="auth.isAuthed ? (faved ? t('favorite.remove') : t('favorite.add')) : t('favorite.loginPrompt')"
+          @click="onFav"
+        >{{ faved ? '♥' : '♡' }}</button>
+        <div v-if="priceMain" class="price">
+          {{ priceMain }}<small v-if="priceSub">{{ priceSub }}</small>
+        </div>
       </div>
     </div>
 
@@ -104,3 +130,12 @@ const hasSchedules = computed(() => props.bus.schedules.length > 0)
     </div>
   </article>
 </template>
+
+<style scoped>
+.topRight { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.favBtn {
+  border: none; background: none; cursor: pointer; line-height: 1;
+  font-size: 22px; color: var(--ink-faint); padding: 2px 4px;
+}
+.favBtn.favOn { color: #e0245e; }
+</style>
