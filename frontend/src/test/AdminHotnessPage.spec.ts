@@ -12,7 +12,7 @@ vi.mock('../api/admin', () => ({
 import AdminHotnessPage from '../pages/admin/AdminHotnessPage.vue'
 
 describe('AdminHotnessPage', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => { vi.clearAllMocks() })
 
   it('renders hotness rows and defaults to 7d window', async () => {
     const wrapper = mount(AdminHotnessPage)

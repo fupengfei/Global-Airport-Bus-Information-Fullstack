@@ -8,7 +8,7 @@ import { http } from '../api/client'
 import * as admin from '../api/admin'
 
 describe('admin api client', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => { vi.clearAllMocks() })
 
   it('getOverview hits /admin/stats/overview', async () => {
     await admin.getOverview()

@@ -16,7 +16,7 @@ vi.mock('echarts', () => ({
 import AdminOverviewPage from '../pages/admin/AdminOverviewPage.vue'
 
 describe('AdminOverviewPage', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => { vi.clearAllMocks() })
 
   it('renders stat cards from overview data', async () => {
     const wrapper = mount(AdminOverviewPage)

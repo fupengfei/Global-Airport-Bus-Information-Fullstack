@@ -12,7 +12,7 @@ vi.mock('../api/admin', () => ({
 import AdminSubscriptionsPage from '../pages/admin/AdminSubscriptionsPage.vue'
 
 describe('AdminSubscriptionsPage', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => { vi.clearAllMocks() })
 
   it('renders top routes / airports / cities', async () => {
     const wrapper = mount(AdminSubscriptionsPage)
