@@ -72,7 +72,8 @@ CONSTRAINT fk_brv_bus FOREIGN KEY (bus_route_id) REFERENCES bus_route(id)
 
 新建 `bus/service/BusCommandService.java`,**独占 bus 写 + hash + 快照 + 事件**。导入器与 admin 都调它(E5:admin 不重复实现)。
 
-**`BusInput`**(编辑 DTO,GET 返回同形):标量 `route/destination/operator/officialUrl/duration/price/operatingHours/lastUpdated`;子表 `stops[]{seq,direction,name}`、`schedules[]{direction,timeRange,intervalText,note}`、`alerts[]{type,message,startDate,endDate}`、`images[]{url,caption}`、`files[]{name,url}`。`fetchFailed` 非表单字段(默认 false)。
+**`BusInput`**(编辑 DTO,GET 返回同形):标量 `route/destination/operator/officialUrl/duration/price/operatingHours/lastUpdated`;子表 `stops[]`(有序字符串名,seq 由顺序决定)、`schedules[]{timeRange,intervalText,note}`、`alerts[]{type,message,startDate,endDate}`、`images[]{url,caption}`、`files[]{name,url}`。`fetchFailed` 非表单字段(默认 false)。
+> **对齐现有写路径(不引入 direction)**:现有 `BusWriteMapper.insertStop/insertSchedule` 与 `Canonicalizer`/`BusDetailDto` 都不含方向字段(direction 列一直走默认 `TO_AIRPORT`)。Slice A 编辑严格对齐现有写/规范化契约,**不新增 direction 编辑**;方向数据模型是既有缺口,不在本期处理。
 
 **`save(sourceId|null, BusInput, expectedVersion, actor, suppressEvents) → BusView`**:
 1. 校验(必填 route;子表字段合法)。
