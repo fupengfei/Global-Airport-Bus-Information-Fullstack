@@ -1,18 +1,19 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { ElCard } from 'element-plus'
 import * as echarts from 'echarts'
 import { getOverview, getRegistrations, type Overview, type RegistrationPoint } from '../../api/admin'
 
 const overview = ref<Overview | null>(null)
 const chartEl = ref<HTMLDivElement | null>(null)
+let chart: echarts.ECharts | null = null
 
 onMounted(async () => {
   overview.value = await getOverview()
   const points: RegistrationPoint[] = await getRegistrations(7)
   await nextTick()
   if (!chartEl.value) return
-  const chart = echarts.init(chartEl.value)
+  chart = echarts.init(chartEl.value)
   chart.setOption({
     grid: { left: 36, right: 12, top: 16, bottom: 28 },
     xAxis: { type: 'category', data: points.map((p) => p.date.slice(5)) },
@@ -20,6 +21,11 @@ onMounted(async () => {
     series: [{ type: 'bar', data: points.map((p) => p.count), itemStyle: { color: '#2f6df6' } }],
     tooltip: { trigger: 'axis' },
   })
+})
+
+onUnmounted(() => {
+  chart?.dispose()
+  chart = null
 })
 </script>
 
