@@ -27,7 +27,7 @@
 - `message` 站内信模块 / `BusUpdatedEvent` / 扇出(#7c)。
 - `audit_log` 表 + 操作记录列表(#7b)。
 - 匿名纠错上报队列(#7d)。
-- 原型里「待处理工单」概览卡片 —— ticket/report 模块未建,**本期砍掉**,免得展示误导性数字。
+- 「待处理工单」概览卡片的**真实数据** —— ticket/report 模块未建。本期**保留该卡片做占位展示**(前端静态占位 `—`,不接后端、不造假数字),后续工单/纠错切片再接真实计数。
 - OPERATOR vs SUPER_ADMIN **细粒度能力矩阵** —— 本期全只读,两种角色都能看;矩阵留到有写操作的 #7c。
 
 **关键依赖判断:** 统计三块的数据源(`app_user`、`favorite`、`airport_search_stat`)均已随 #2/#3/查询主线落地,无新建表、无跨切片依赖。
@@ -60,7 +60,7 @@ MyBatis 仅用 `#{}`;聚合查询排除 `deleted=1`(沿用约定)。
 
 | 方法 | 路径 | 成功返回 |
 |------|------|----------|
-| `GET` | `/admin/stats/overview` | `200 { totalUsers, newUsersThisWeek, totalFavorites, newFavoritesThisWeek }` |
+| `GET` | `/admin/stats/overview` | `200 { totalUsers, newUsersThisWeek, totalFavorites, newFavoritesThisWeek }`(无工单字段,占位卡纯前端) |
 | `GET` | `/admin/stats/registrations?days=7` | `200 [ { date:"2026-06-20", count:42 }, … ]`(按天升序,缺省 7 天,**无注册的天补 0** 保证连续) |
 | `GET` | `/admin/stats/subscriptions` | `200 { topRoutes:[…], topAirports:[…], topCities:[…] }` |
 | `GET` | `/admin/stats/hotness?window=7d` | `200 [ { airportCode, airportName, cityName, views }, … ]`(按 views 倒序) |
@@ -93,7 +93,7 @@ MyBatis 仅用 `#{}`;聚合查询排除 `deleted=1`(沿用约定)。
 - **Element Plus 局部注册**:仅在 admin 入口/布局注册(或 admin chunk 内 `app.use`),**不进全局 `main.ts`**,保持公开页轻量。
 - **页面 / 组件**:
   - `components/admin/AdminLayout.vue` —— 顶栏 + 侧栏(照 `admin.html`)。侧栏本期仅「概览 / 订阅统计 / 热度榜单」;「巴士维护 / 纠错上报 / 操作记录」**先不放**,各切片再加。
-  - `pages/admin/AdminOverviewPage.vue` —— 统计卡(总用户 / 本周新增 / 收藏订阅 / 本周新增收藏)+ ECharts 注册趋势柱状图。
+  - `pages/admin/AdminOverviewPage.vue` —— 统计卡 + ECharts 注册趋势柱状图。卡片照原型保留 4 张:总用户 / 本周新增 / 收藏订阅 / **待处理工单(占位)**。前三张接 `overview` 真实数据,第 4 张显静态 `—` 并带「敬请期待」式提示(后续切片接真实计数,不返工布局)。
   - `pages/admin/AdminSubscriptionsPage.vue` —— 三张表(线路 / 机场 / 城市)。
   - `pages/admin/AdminHotnessPage.vue` —— 热度榜单表 + 时间窗切换(7d/30d/all)。
 - **API 客户端**:`api/admin.ts`,走现有 `client.ts`(自动带 JWT + 401 处理)。
