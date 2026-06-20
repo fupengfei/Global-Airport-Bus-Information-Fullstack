@@ -122,6 +122,7 @@ public class BusCommandService {
     }
 
     /** 给 admin GET 用:detail + version + 核对时间 组 BusView。 */
+    @Transactional(readOnly = true)
     public BusView viewFor(String sourceId) {
         var d = busQuery.detail(sourceId);
         var vh = writeMapper.selectVersionHash(sourceId);

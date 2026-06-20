@@ -28,7 +28,7 @@
   </update>
 
   <select id="findBusId" resultType="java.lang.Long">
-    SELECT id FROM bus_route WHERE source_id = #{sourceId}
+    SELECT id FROM bus_route WHERE source_id = #{sourceId} AND deleted = 0
   </select>
   <insert id="insertBus" useGeneratedKeys="true" keyProperty="id" parameterType="map">
     INSERT INTO bus_route(airport_id, source_id, route, destination, operator, official_url,
