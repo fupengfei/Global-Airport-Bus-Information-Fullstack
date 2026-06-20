@@ -44,4 +44,20 @@
   <select id="findFirstByRole" resultMap="userMap">
     SELECT * FROM app_user WHERE role = #{role} AND deleted = 0 ORDER BY id LIMIT 1
   </select>
+
+  <select id="countUsers" resultType="long">
+    SELECT COUNT(*) FROM app_user WHERE deleted = 0
+  </select>
+
+  <select id="countUsersSince" resultType="long">
+    SELECT COUNT(*) FROM app_user WHERE deleted = 0 AND created_at &gt;= #{since}
+  </select>
+
+  <select id="countRegistrationsByDay" resultType="com.airportbus.user.mapper.UserMapper$DayCount">
+    SELECT DATE(created_at) AS day, COUNT(*) AS count
+    FROM app_user
+    WHERE deleted = 0 AND created_at &gt;= #{since}
+    GROUP BY DATE(created_at)
+    ORDER BY day
+  </select>
 </mapper>
