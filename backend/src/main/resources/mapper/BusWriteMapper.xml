@@ -61,4 +61,27 @@
     INSERT INTO bus_alert(bus_route_id, type, message, start_date, end_date)
     VALUES(#{busId}, #{type}, #{message}, #{startDate}, #{endDate})
   </insert>
+
+  <select id="selectVersionHash" resultType="com.airportbus.bus.mapper.BusWriteMapper$VersionHash">
+    SELECT version, content_hash AS contentHash FROM bus_route
+    WHERE source_id = #{sourceId} AND deleted = 0
+  </select>
+
+  <update id="updateBusFull" parameterType="map">
+    UPDATE bus_route SET airport_id=#{airportId}, route=#{route}, destination=#{destination},
+      operator=#{operator}, official_url=#{officialUrl}, duration=#{duration}, price=#{price},
+      operating_hours=#{operatingHours}, last_updated=#{lastUpdated}, fetch_failed=#{fetchFailed},
+      content_hash=#{contentHash}, version=#{newVersion}, updated_by=#{actor}
+    WHERE id=#{id}
+  </update>
+
+  <update id="updateVerify">
+    UPDATE bus_route SET last_verified_at=#{at}, last_verified_by=#{actor}, updated_by=#{actor}
+    WHERE source_id=#{sourceId} AND deleted=0
+  </update>
+
+  <update id="softDeleteBus">
+    UPDATE bus_route SET deleted=1, updated_by=#{actor}
+    WHERE source_id=#{sourceId} AND deleted=0
+  </update>
 </mapper>

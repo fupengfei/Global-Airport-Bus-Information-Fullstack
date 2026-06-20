@@ -30,4 +30,20 @@ public interface BusWriteMapper {
     void insertImage(@Param("busId") Long busId, @Param("url") String url, @Param("caption") String caption);
     void insertFile(@Param("busId") Long busId, @Param("name") String name, @Param("url") String url);
     void insertAlert(Map<String, Object> row);     // busId, type, message, startDate, endDate
+
+    /** 读当前 version + content_hash(乐观锁/变更判定用);不存在返回 null。 */
+    VersionHash selectVersionHash(@Param("sourceId") String sourceId);
+
+    /** 更新 bus 全字段 + content_hash + version(=#{newVersion}) + last_updated。 */
+    void updateBusFull(java.util.Map<String, Object> row);
+
+    /** 核对无误:仅更新 last_verified_at/by + updated_by。 */
+    void updateVerify(@Param("sourceId") String sourceId,
+                      @Param("at") java.time.LocalDateTime at,
+                      @Param("actor") String actor);
+
+    /** 软删线路。 */
+    void softDeleteBus(@Param("sourceId") String sourceId, @Param("actor") String actor);
+
+    record VersionHash(int version, String contentHash) {}
 }
