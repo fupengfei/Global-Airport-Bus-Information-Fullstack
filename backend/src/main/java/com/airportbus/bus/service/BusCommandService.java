@@ -65,7 +65,7 @@ public class BusCommandService {
             ChangedSummary summary = diff(emptyInput(), input);
             writeSnapshot(busRouteId, newVersion, input, newHash, summary, actor);
             if (!suppressEvents)
-                events.publishEvent(new BusUpdatedEvent(busRouteId, sourceId, null, newHash, summary));
+                events.publishEvent(new BusUpdatedEvent(busRouteId, sourceId, input.route(), newVersion, null, newHash, summary));
             return view(sourceId, airportId, newVersion, input);
         }
 
@@ -91,7 +91,7 @@ public class BusCommandService {
         ChangedSummary summary = diff(oldInput, input);
         writeSnapshot(busRouteId, newVersion, input, newHash, summary, actor);
         if (!suppressEvents)
-            events.publishEvent(new BusUpdatedEvent(busRouteId, sourceId, oldHash, newHash, summary));
+            events.publishEvent(new BusUpdatedEvent(busRouteId, sourceId, input.route(), newVersion, oldHash, newHash, summary));
         return view(sourceId, airportId, newVersion, input);
     }
 
@@ -106,7 +106,10 @@ public class BusCommandService {
     public void delete(String sourceId, String actor) {
         if (writeMapper.selectVersionHash(sourceId) == null)
             throw new ApiException(ErrorCode.BUS_NOT_FOUND, sourceId);
+        long busRouteId = writeMapper.findBusId(sourceId);
+        String route = writeMapper.selectRouteBySource(sourceId);
         writeMapper.softDeleteBus(sourceId, actor);
+        events.publishEvent(new BusDeletedEvent(busRouteId, sourceId, route));
     }
 
     public BusInput getVersion(String sourceId, int version) {

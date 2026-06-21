@@ -85,6 +85,10 @@
     WHERE source_id=#{sourceId} AND deleted=0
   </update>
 
+  <select id="selectRouteBySource" resultType="string">
+    SELECT route FROM bus_route WHERE source_id=#{sourceId} AND deleted=0
+  </select>
+
   <select id="selectAirportIdBySource" resultType="int">
     SELECT a.id FROM bus_route b JOIN airport a ON a.id=b.airport_id
     WHERE b.source_id=#{sourceId} AND b.deleted=0

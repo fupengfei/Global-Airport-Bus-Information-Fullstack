@@ -45,6 +45,9 @@ public interface BusWriteMapper {
     /** 软删线路。 */
     void softDeleteBus(@Param("sourceId") String sourceId, @Param("actor") String actor);
 
+    /** 通过 source_id 查 route 名称(delete 发布事件用)。 */
+    String selectRouteBySource(@Param("sourceId") String sourceId);
+
     record VersionHash(int version, String contentHash) {}
 
     /** 通过 source_id 查 airport 内部数字 id(rollback 时用)。 */
