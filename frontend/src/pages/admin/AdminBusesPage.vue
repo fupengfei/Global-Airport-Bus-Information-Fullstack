@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { getTree, getBus, listVersions, type AdminTreeRow, type BusView, type VersionMeta } from '../../api/admin-bus'
+import { ElInput, ElButton, ElMessage, ElMessageBox } from 'element-plus'
+import { getTree, getBus, listVersions, updateBus, verifyBus, deleteBus, type AdminTreeRow, type BusView, type VersionMeta } from '../../api/admin-bus'
+import { asApiError } from '../../api/client'
+import { useAuth } from '../../stores/auth'
 
+const auth = useAuth()
 const tree = ref<AdminTreeRow[]>([])
 const current = ref<BusView | null>(null)
 const versions = ref<VersionMeta[]>([])
@@ -17,13 +21,61 @@ const grouped = computed(() => {
   return map
 })
 
+const canDelete = computed(() => auth.user?.role === 'SUPER_ADMIN')
+
 async function loadTree() { tree.value = await getTree() }
 async function select(sourceId: string) {
   current.value = await getBus(sourceId)
   versions.value = await listVersions(sourceId)
 }
+
+async function save() {
+  if (!current.value) return
+  const c = current.value
+  try {
+    current.value = await updateBus(c.sourceId, { airportCode: c.airportCode, version: c.version, data: c.data })
+    versions.value = await listVersions(c.sourceId)
+    ElMessage.success('已保存')
+  } catch (e) {
+    const err = asApiError(e)
+    if (err?.code === 'BUS_VERSION_CONFLICT') {
+      ElMessage.warning('该线路已被他人修改,正在重新加载最新版本')
+      await select(c.sourceId)
+    } else { ElMessage.error(err?.message ?? '保存失败') }
+  }
+}
+
+async function verify() {
+  if (!current.value) return
+  await verifyBus(current.value.sourceId)
+  ElMessage.success('已标记核对无误')
+}
+
+async function removeBus() {
+  if (!current.value) return
+  try {
+    await ElMessageBox.confirm('确认下线该线路?', '下线确认', { type: 'warning' })
+    await deleteBus(current.value.sourceId)
+    current.value = null
+    await loadTree()
+    ElMessage.success('已下线')
+  } catch { /* 取消或失败 */ }
+}
+
+function addStop() { current.value!.data.stops.push('') }
+function removeStop(i: number) { current.value!.data.stops.splice(i, 1) }
+function addSchedule() { current.value!.data.schedules.push({ timeRange: '', intervalText: '', note: '' }) }
+function removeSchedule(i: number) { current.value!.data.schedules.splice(i, 1) }
+function addAlert() { current.value!.data.alerts.push({ type: 'info', message: '', startDate: null, endDate: null }) }
+function removeAlert(i: number) { current.value!.data.alerts.splice(i, 1) }
+function addImage() { current.value!.data.images.push({ url: '', caption: null }) }
+function removeImage(i: number) { current.value!.data.images.splice(i, 1) }
+function addFile() { current.value!.data.files.push({ name: null, url: '' }) }
+function removeFile(i: number) { current.value!.data.files.splice(i, 1) }
+
 onMounted(loadTree)
-defineExpose({ current, versions, select, loadTree })
+defineExpose({ current, versions, select, loadTree, save, verify, removeBus, canDelete,
+  addStop, removeStop, addSchedule, removeSchedule, addAlert, removeAlert, addImage, removeImage, addFile, removeFile })
 </script>
 
 <template>
@@ -44,8 +96,63 @@ defineExpose({ current, versions, select, loadTree })
     <div class="panel" style="margin: 0">
       <p v-if="!current" class="formNote">从左侧选择一条线路进行编辑。</p>
       <div v-else>
-        <h3 style="margin-top: 0">编辑线路 · {{ current.data.route }} <span class="formNote">v{{ current.version }}</span></h3>
-        <div class="formNote">价格:{{ current.data.price }}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3 style="margin:0">编辑线路 · {{ current.data.route }}</h3>
+          <span class="formNote">v{{ current.version }} · 乐观锁(冲突 409)</span>
+        </div>
+        <div class="formrow"><label>线路名 route</label><ElInput v-model="current.data.route" /></div>
+        <div class="formrow"><label>目的地 destination</label><ElInput v-model="current.data.destination" /></div>
+        <div class="formrow"><label>运营方 operator</label><ElInput v-model="current.data.operator" /></div>
+        <div class="formrow"><label>官网 officialUrl</label><ElInput v-model="current.data.officialUrl" /></div>
+        <div class="formrow"><label>时长 duration</label><ElInput v-model="current.data.duration" /></div>
+        <div class="formrow"><label>价格 price</label><ElInput v-model="current.data.price" /></div>
+        <div class="formrow"><label>运营时间 operatingHours</label><ElInput v-model="current.data.operatingHours" /></div>
+        <div class="formrow"><label>数据日期 lastUpdated</label><ElInput v-model="current.data.lastUpdated" placeholder="YYYY-MM-DD" /></div>
+
+        <h4>停靠站 stops</h4>
+        <div v-for="(s, i) in current.data.stops" :key="'s'+i" style="display:flex;gap:8px;margin-bottom:6px">
+          <ElInput v-model="current.data.stops[i]" /><ElButton @click="removeStop(i)">删</ElButton>
+        </div>
+        <ElButton size="small" @click="addStop">+ 停靠站</ElButton>
+
+        <h4>班次 schedules</h4>
+        <div v-for="(s, i) in current.data.schedules" :key="'sc'+i" style="display:flex;gap:8px;margin-bottom:6px">
+          <ElInput v-model="s.timeRange" placeholder="时段" />
+          <ElInput v-model="s.intervalText" placeholder="间隔" />
+          <ElInput v-model="s.note" placeholder="备注" />
+          <ElButton @click="removeSchedule(i)">删</ElButton>
+        </div>
+        <ElButton size="small" @click="addSchedule">+ 班次</ElButton>
+
+        <h4>提示 alerts</h4>
+        <div v-for="(a, i) in current.data.alerts" :key="'al'+i" style="display:flex;gap:8px;margin-bottom:6px">
+          <ElInput v-model="a.type" placeholder="类型" style="width:90px" />
+          <ElInput v-model="a.message" placeholder="内容" />
+          <ElInput v-model="a.startDate" placeholder="起" style="width:120px" />
+          <ElInput v-model="a.endDate" placeholder="止" style="width:120px" />
+          <ElButton @click="removeAlert(i)">删</ElButton>
+        </div>
+        <ElButton size="small" @click="addAlert">+ 提示</ElButton>
+
+        <h4>图片 images</h4>
+        <div v-for="(m, i) in current.data.images" :key="'im'+i" style="display:flex;gap:8px;margin-bottom:6px">
+          <ElInput v-model="m.url" placeholder="url" /><ElInput v-model="m.caption" placeholder="说明" />
+          <ElButton @click="removeImage(i)">删</ElButton>
+        </div>
+        <ElButton size="small" @click="addImage">+ 图片</ElButton>
+
+        <h4>文件 files</h4>
+        <div v-for="(f, i) in current.data.files" :key="'fl'+i" style="display:flex;gap:8px;margin-bottom:6px">
+          <ElInput v-model="f.name" placeholder="名称" /><ElInput v-model="f.url" placeholder="url" />
+          <ElButton @click="removeFile(i)">删</ElButton>
+        </div>
+        <ElButton size="small" @click="addFile">+ 文件</ElButton>
+
+        <div style="display:flex;gap:10px;margin-top:16px">
+          <ElButton type="primary" @click="save">保存(触发推送)</ElButton>
+          <ElButton @click="verify">核对无误</ElButton>
+          <ElButton v-if="canDelete" type="danger" @click="removeBus">下线</ElButton>
+        </div>
       </div>
     </div>
   </div>
