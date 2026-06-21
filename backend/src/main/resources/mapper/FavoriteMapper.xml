@@ -22,6 +22,15 @@
     ORDER BY f.updated_at DESC
   </select>
 
+  <select id="selectActiveUserIdsByBusRouteId" resultType="long">
+    SELECT user_id FROM favorite WHERE bus_route_id=#{busRouteId} AND deleted=0
+  </select>
+
+  <update id="softDeleteByBusRouteId">
+    UPDATE favorite SET deleted=1, updated_by=#{actor}, updated_at=CURRENT_TIMESTAMP
+    WHERE bus_route_id=#{busRouteId} AND deleted=0
+  </update>
+
   <select id="countFavorites" resultType="long">
     SELECT COUNT(*) FROM favorite WHERE deleted = 0
   </select>

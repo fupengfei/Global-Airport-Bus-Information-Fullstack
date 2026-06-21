@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.airportbus.message.mapper.MessageMapper">
+
+  <insert id="batchInsert">
+    INSERT INTO message (user_id, template_code, params_json, related_bus_route_id, dedup_key, created_by)
+    VALUES
+    <foreach collection="rows" item="r" separator=",">
+      (#{r.userId}, #{r.templateCode}, #{r.paramsJson}, #{r.relatedBusRouteId}, #{r.dedupKey}, #{r.actor})
+    </foreach>
+    ON DUPLICATE KEY UPDATE id = id
+  </insert>
+
+  <select id="countUnread" resultType="long">
+    SELECT COUNT(*) FROM message WHERE user_id=#{userId} AND is_read=0 AND deleted=0
+  </select>
+
+  <select id="selectPage" resultType="com.airportbus.message.Message">
+    SELECT m.id, m.user_id AS userId, m.template_code AS templateCode, m.params_json AS params,
+           br.source_id AS relatedSourceId, m.is_read AS isRead, m.created_at AS createdAt
+    FROM message m
+    LEFT JOIN bus_route br ON br.id = m.related_bus_route_id
+    WHERE m.user_id=#{userId} AND m.deleted=0
+    ORDER BY m.created_at DESC, m.id DESC
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+
+  <update id="markRead">
+    UPDATE message SET is_read=1, read_at=CURRENT_TIMESTAMP
+    WHERE user_id=#{userId} AND deleted=0 AND is_read=0 AND id IN
+    <foreach collection="ids" item="i" open="(" separator="," close=")">#{i}</foreach>
+  </update>
+
+  <update id="softDelete">
+    UPDATE message SET deleted=1 WHERE user_id=#{userId} AND id=#{id} AND deleted=0
+  </update>
+
+  <select id="selectMissingForCurrentVersion" resultType="com.airportbus.message.mapper.MessageMapper$Backfill">
+    SELECT f.user_id AS userId, b.id AS busRouteId, b.version AS version, b.route AS route, b.source_id AS sourceId
+    FROM favorite f
+    JOIN bus_route b ON b.id = f.bus_route_id AND b.deleted = 0
+    WHERE f.deleted = 0 AND b.version &gt; 0
+      AND NOT EXISTS (
+        SELECT 1 FROM message m
+        WHERE m.user_id = f.user_id AND m.deleted = 0
+          AND m.dedup_key = CONCAT('bus:', b.id, ':v:', b.version)
+      )
+  </select>
+</mapper>
