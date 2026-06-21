@@ -13,5 +13,7 @@ describe('AdminLayout', () => {
     expect(text).toContain('概览')
     expect(text).toContain('订阅统计')
     expect(text).toContain('热度榜单')
+    expect(text).toContain('巴士维护')
+    expect(text).toContain('操作记录')
   })
 })

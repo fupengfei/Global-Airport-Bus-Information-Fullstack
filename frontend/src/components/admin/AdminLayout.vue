@@ -6,6 +6,8 @@ const nav = [
   { to: { name: 'admin-overview' }, label: '概览', icon: '📊' },
   { to: { name: 'admin-subscriptions' }, label: '订阅统计', icon: '⭐' },
   { to: { name: 'admin-hotness' }, label: '热度榜单', icon: '🔥' },
+  { to: { name: 'admin-buses' }, label: '巴士维护', icon: '🚌' },
+  { to: { name: 'admin-audit' }, label: '操作记录', icon: '🧾' },
 ]
 </script>
 
