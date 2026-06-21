@@ -1,8 +1,7 @@
 package com.airportbus.bus.seed;
 
-import com.airportbus.bus.hash.CanonicalBus;
-import com.airportbus.bus.hash.Canonicalizer;
 import com.airportbus.bus.mapper.BusWriteMapper;
+import com.airportbus.bus.service.BusCommandService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -12,15 +11,17 @@ import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.*;
 
-/** E11:只落库不发事件;E2:复用 Canonicalizer。以自然键 upsert,子表先删后插,幂等。 */
+/** E11:只落库不发事件;E5:委托 BusCommandService 统一写路径。以自然键 upsert,幂等。 */
 @Service
 public class SeedImporter {
 
     private final BusWriteMapper mapper;
+    private final BusCommandService busCommand;
     private final ObjectMapper json = new ObjectMapper();
 
-    public SeedImporter(BusWriteMapper mapper) {
+    public SeedImporter(BusWriteMapper mapper, BusCommandService busCommand) {
         this.mapper = mapper;
+        this.busCommand = busCommand;
     }
 
     @Transactional
@@ -82,77 +83,19 @@ public class SeedImporter {
     }
 
     private void upsertBus(Long airportId, SeedDtos.Bus bus) {
-        String hash = Canonicalizer.contentHash(toCanonical(bus));
-        Long id = mapper.findBusId(bus.id());
-        Map<String, Object> row = new HashMap<>();
-        row.put("airportId", airportId);
-        row.put("sourceId", bus.id());
-        row.put("route", bus.route());
-        row.put("destination", bus.destination());
-        row.put("operator", bus.operator());
-        row.put("officialUrl", bus.officialUrl());
-        row.put("duration", bus.duration());
-        row.put("price", bus.price());
-        row.put("operatingHours", bus.operatingHours());
-        row.put("lastUpdated", parseDate(bus.lastUpdated()));
-        row.put("fetchFailed", bus.fetchFailed());
-        row.put("contentHash", hash);
-        if (id == null) {
-            mapper.insertBus(row);
-            id = toLong(row.get("id"));
-        } else {
-            row.put("id", id);
-            mapper.updateBus(row);
-        }
-        replaceChildren(id, bus);
-    }
-
-    private void replaceChildren(Long busId, SeedDtos.Bus bus) {
-        mapper.deleteStops(busId);
-        mapper.deleteSchedules(busId);
-        mapper.deleteImages(busId);
-        mapper.deleteFiles(busId);
-        mapper.deleteAlerts(busId);
-
-        int seq = 0;
-        for (String s : nz(bus.stops())) mapper.insertStop(busId, seq++, s);
-        for (SeedDtos.Schedule sc : nz(bus.schedules())) {
-            Map<String, Object> r = new HashMap<>();
-            r.put("busId", busId);
-            r.put("timeRange", sc.timeRange());
-            r.put("intervalText", sc.interval());
-            r.put("note", sc.note());
-            mapper.insertSchedule(r);
-        }
-        for (SeedDtos.Image im : nz(bus.images())) mapper.insertImage(busId, im.url(), im.caption());
-        for (SeedDtos.FileRef f : nz(bus.files())) mapper.insertFile(busId, f.name(), f.url());
-        for (SeedDtos.Alert a : nz(bus.alerts())) {
-            Map<String, Object> r = new HashMap<>();
-            r.put("busId", busId);
-            r.put("type", a.type());
-            r.put("message", a.message());
-            r.put("startDate", parseDate(a.startDate()));
-            r.put("endDate", parseDate(a.endDate()));
-            mapper.insertAlert(r);
-        }
-    }
-
-    /** SeedBus -> CanonicalBus,字段对齐(interval->intervalText, caption/name->label)。 */
-    static CanonicalBus toCanonical(SeedDtos.Bus bus) {
-        List<CanonicalBus.Schedule> schedules = new ArrayList<>();
-        for (SeedDtos.Schedule sc : nz(bus.schedules()))
-            schedules.add(new CanonicalBus.Schedule(sc.timeRange(), sc.interval(), sc.note()));
-        List<CanonicalBus.Alert> alerts = new ArrayList<>();
-        for (SeedDtos.Alert a : nz(bus.alerts()))
-            alerts.add(new CanonicalBus.Alert(a.type(), a.message(), a.startDate(), a.endDate()));
-        List<CanonicalBus.Media> images = new ArrayList<>();
-        for (SeedDtos.Image im : nz(bus.images()))
-            images.add(new CanonicalBus.Media(im.url(), im.caption()));
-        List<CanonicalBus.Media> files = new ArrayList<>();
-        for (SeedDtos.FileRef f : nz(bus.files()))
-            files.add(new CanonicalBus.Media(f.url(), f.name()));
-        return new CanonicalBus(bus.route(), bus.destination(), bus.operator(), bus.duration(),
-                bus.price(), bus.operatingHours(), nz(bus.stops()), schedules, alerts, images, files);
+        com.airportbus.bus.api.dto.BusInput input = new com.airportbus.bus.api.dto.BusInput(
+                bus.route(), bus.destination(), bus.operator(), bus.officialUrl(),
+                bus.duration(), bus.price(), bus.operatingHours(), parseDate(bus.lastUpdated()),
+                nz(bus.stops()),
+                bus.schedules() == null ? java.util.List.of() : bus.schedules().stream()
+                        .map(s -> new com.airportbus.bus.api.dto.BusDetailDto.Schedule(s.timeRange(), s.interval(), s.note())).toList(),
+                bus.alerts() == null ? java.util.List.of() : bus.alerts().stream()
+                        .map(a -> new com.airportbus.bus.api.dto.BusDetailDto.Alert(a.type(), a.message(), parseDate(a.startDate()), parseDate(a.endDate()))).toList(),
+                bus.images() == null ? java.util.List.of() : bus.images().stream()
+                        .map(im -> new com.airportbus.bus.api.dto.BusDetailDto.Image(im.url(), im.caption())).toList(),
+                bus.files() == null ? java.util.List.of() : bus.files().stream()
+                        .map(f -> new com.airportbus.bus.api.dto.BusDetailDto.FileRef(f.name(), f.url())).toList());
+        busCommand.save(bus.id(), airportId, input, null, "seed", true); // E11 抑制事件
     }
 
     private static LocalDate parseDate(String s) {
