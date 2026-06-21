@@ -49,6 +49,16 @@ public class FavoriteService {
         return out;
     }
 
+    /** 返回指定线路所有活跃订阅者的 user_id;供 message 模块跨模块调用(E5)。 */
+    public java.util.List<Long> activeSubscriberUserIds(long busRouteId) {
+        return mapper.selectActiveUserIdsByBusRouteId(busRouteId);
+    }
+
+    /** 按线路软删所有收藏(线路下架时清理订阅)。 */
+    public int softDeleteByBusRouteId(long busRouteId, String actor) {
+        return mapper.softDeleteByBusRouteId(busRouteId, actor);
+    }
+
     private static String actor(JwtPrincipal me) {
         return "user:" + me.userId();
     }

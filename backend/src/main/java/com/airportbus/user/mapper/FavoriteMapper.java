@@ -18,6 +18,12 @@ public interface FavoriteMapper {
     /** 当前用户已收藏(deleted=0)且线路未删除的 source_id,按收藏动作时间倒序。 */
     List<String> selectFavoritedSourceIds(@Param("userId") long userId);
 
+    /** 返回指定线路的所有活跃订阅者(deleted=0)的 user_id 列表。供 message 模块跨模块调用(E5)。 */
+    java.util.List<Long> selectActiveUserIdsByBusRouteId(@Param("busRouteId") long busRouteId);
+
+    /** 按线路软删所有收藏(deleted=1),供线路下架时清理订阅。 */
+    int softDeleteByBusRouteId(@Param("busRouteId") long busRouteId, @Param("actor") String actor);
+
     long countFavorites();
 
     long countFavoritesSince(@Param("since") java.time.LocalDate since);
