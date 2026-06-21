@@ -109,6 +109,13 @@ public class BusCommandService {
         writeMapper.softDeleteBus(sourceId, actor);
     }
 
+    public BusInput getVersion(String sourceId, int version) {
+        long busRouteId = writeMapper.findBusId(sourceId);
+        String snap = versionMapper.selectSnapshotJson(busRouteId, version);
+        if (snap == null) throw new ApiException(ErrorCode.BUS_NOT_FOUND, sourceId + "@v" + version);
+        return readSnapshot(snap);
+    }
+
     @Transactional
     public BusView rollback(String sourceId, int targetVersion, String actor) {
         long busRouteId = writeMapper.findBusId(sourceId);

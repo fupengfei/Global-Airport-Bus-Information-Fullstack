@@ -121,4 +121,18 @@ class AdminBusApiIT {
                 .andExpect(jsonPath("$.version").value(1))
                 .andExpect(jsonPath("$.data.price").value("€11"));
     }
+
+    @Test void getSingleVersion_returnsSnapshot() throws Exception {
+        String su = superToken();
+        mvc.perform(post("/api/v1/admin/buses").header("Authorization","Bearer "+su)
+                .contentType(MediaType.APPLICATION_JSON).content(createBody("vie-ver1","€11"))).andExpect(status().isOk());
+        mvc.perform(put("/api/v1/admin/buses/vie-ver1").header("Authorization","Bearer "+su)
+                .contentType(MediaType.APPLICATION_JSON).content(body("€13",1))).andExpect(status().isOk());
+        // version 1 snapshot still holds the original price
+        mvc.perform(get("/api/v1/admin/buses/vie-ver1/versions/1").header("Authorization","Bearer "+su))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.price").value("€11"));
+        // anonymous blocked
+        mvc.perform(get("/api/v1/admin/buses/vie-ver1/versions/1")).andExpect(status().isUnauthorized());
+    }
 }

@@ -76,6 +76,12 @@ public class AdminBusController {
         return versionMapper.listVersions(busId(sourceId));
     }
 
+    @GetMapping("/{sourceId}/versions/{version}")
+    public com.airportbus.bus.api.dto.BusInput versionSnapshot(@PathVariable String sourceId, @PathVariable int version) {
+        CurrentUser.requireAdmin();
+        return cmd.getVersion(sourceId, version);
+    }
+
     @PostMapping("/{sourceId}/versions/{version}/rollback")
     @Audited(action = "ROLLBACK_BUS")
     public BusView rollback(@PathVariable String sourceId, @PathVariable int version) {
