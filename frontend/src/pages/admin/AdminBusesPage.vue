@@ -29,9 +29,15 @@ async function select(sourceId: string) {
   versions.value = await listVersions(sourceId)
 }
 
+function blankToNull(s: string | null): string | null {
+  return s == null || s.trim() === '' ? null : s
+}
+
 async function save() {
   if (!current.value) return
   const c = current.value
+  c.data.lastUpdated = blankToNull(c.data.lastUpdated)
+  for (const a of c.data.alerts) { a.startDate = blankToNull(a.startDate); a.endDate = blankToNull(a.endDate) }
   try {
     current.value = await updateBus(c.sourceId, { airportCode: c.airportCode, version: c.version, data: c.data })
     versions.value = await listVersions(c.sourceId)
