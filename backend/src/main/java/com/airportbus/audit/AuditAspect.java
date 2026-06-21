@@ -31,8 +31,22 @@ public class AuditAspect {
         String[] names = ((MethodSignature) pjp.getSignature()).getParameterNames();
         Object[] args = pjp.getArgs();
         if (names != null) {
+            // 1. 直接参数名为 sourceId（PathVariable 场景）
             for (int i = 0; i < names.length; i++) {
                 if ("sourceId".equals(names[i]) && args[i] != null) return args[i].toString();
+            }
+            // 2. RequestBody DTO 带 sourceId() 方法（CreateBusRequest 等 record 场景）
+            for (Object arg : args) {
+                if (arg == null) continue;
+                try {
+                    java.lang.reflect.Method m = arg.getClass().getMethod("sourceId");
+                    Object v = m.invoke(arg);
+                    if (v != null) return v.toString();
+                } catch (NoSuchMethodException ignored) {
+                    // 此 arg 没有 sourceId() 方法,继续
+                } catch (Exception e) {
+                    // 反射调用失败,静默跳过
+                }
             }
         }
         return null;
