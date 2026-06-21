@@ -99,4 +99,14 @@
     FROM bus_route b JOIN airport a ON a.id=b.airport_id
     WHERE b.source_id=#{sourceId} AND b.deleted=0
   </select>
+
+  <select id="selectAdminTree" resultType="com.airportbus.bus.mapper.BusWriteMapper$AdminTreeRow">
+    SELECT c.code AS countryCode, c.name AS countryName, ci.name AS cityName,
+           a.code AS airportCode, a.name AS airportName, b.source_id AS busSourceId, b.route AS busRoute
+    FROM country c JOIN city ci ON ci.country_id=c.id
+    JOIN airport a ON a.city_id=ci.id
+    LEFT JOIN bus_route b ON b.airport_id=a.id AND b.deleted=0
+    WHERE c.deleted=0 AND ci.deleted=0 AND a.deleted=0
+    ORDER BY c.name, ci.name, a.name, b.route
+  </select>
 </mapper>

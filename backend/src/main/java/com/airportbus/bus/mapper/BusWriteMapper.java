@@ -57,4 +57,8 @@ public interface BusWriteMapper {
     AdminMeta selectAdminMeta(@Param("sourceId") String sourceId);
 
     record AdminMeta(String airportCode, java.time.LocalDateTime lastVerifiedAt) {}
+
+    java.util.List<AdminTreeRow> selectAdminTree();
+    record AdminTreeRow(String countryCode, String countryName, String cityName,
+                        String airportCode, String airportName, String busSourceId, String busRoute) {}
 }
