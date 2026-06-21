@@ -18,6 +18,8 @@ export const router = createRouter({
         { path: '', name: 'admin-overview', component: () => import('../pages/admin/AdminOverviewPage.vue') },
         { path: 'subscriptions', name: 'admin-subscriptions', component: () => import('../pages/admin/AdminSubscriptionsPage.vue') },
         { path: 'hotness', name: 'admin-hotness', component: () => import('../pages/admin/AdminHotnessPage.vue') },
+        { path: 'buses', name: 'admin-buses', component: () => import('../pages/admin/AdminBusesPage.vue') },
+        { path: 'audit', name: 'admin-audit', component: () => import('../pages/admin/AdminAuditPage.vue') },
       ],
     },
   ],
