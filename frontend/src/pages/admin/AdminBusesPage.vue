@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { ElInput, ElButton, ElMessage, ElMessageBox } from 'element-plus'
-import { getTree, getBus, listVersions, updateBus, verifyBus, deleteBus, type AdminTreeRow, type BusView, type VersionMeta } from '../../api/admin-bus'
+import { ElInput, ElButton, ElMessage, ElMessageBox, ElTable, ElTableColumn } from 'element-plus'
+import { getTree, getBus, listVersions, updateBus, verifyBus, deleteBus, rollbackVersion, type AdminTreeRow, type BusView, type VersionMeta } from '../../api/admin-bus'
 import { asApiError } from '../../api/client'
 import { useAuth } from '../../stores/auth'
 
@@ -73,9 +73,24 @@ function removeImage(i: number) { current.value!.data.images.splice(i, 1) }
 function addFile() { current.value!.data.files.push({ name: null, url: '' }) }
 function removeFile(i: number) { current.value!.data.files.splice(i, 1) }
 
+async function doRollback(version: number) {
+  if (!current.value) return
+  const saved = await rollbackVersion(current.value.sourceId, version)
+  current.value = saved
+  versions.value = await listVersions(saved.sourceId)
+  ElMessage.success(`已回滚自 v${version}`)
+}
+async function confirmRollback(version: number) {
+  try {
+    await ElMessageBox.confirm(`确认把线路回滚到 v${version}?这会生成一个新版本。`, '回滚确认', { type: 'warning' })
+    await doRollback(version)
+  } catch { /* 用户取消 */ }
+}
+
 onMounted(loadTree)
 defineExpose({ current, versions, select, loadTree, save, verify, removeBus, canDelete,
-  addStop, removeStop, addSchedule, removeSchedule, addAlert, removeAlert, addImage, removeImage, addFile, removeFile })
+  addStop, removeStop, addSchedule, removeSchedule, addAlert, removeAlert, addImage, removeImage, addFile, removeFile,
+  doRollback, confirmRollback })
 </script>
 
 <template>
@@ -153,6 +168,21 @@ defineExpose({ current, versions, select, loadTree, save, verify, removeBus, can
           <ElButton @click="verify">核对无误</ElButton>
           <ElButton v-if="canDelete" type="danger" @click="removeBus">下线</ElButton>
         </div>
+
+        <h4 style="margin-top:20px">版本历史</h4>
+        <ElTable :data="versions" style="width:100%">
+          <ElTableColumn label="版本" width="80">
+            <template #default="{ row }">v{{ row.version }}</template>
+          </ElTableColumn>
+          <ElTableColumn prop="actor" label="操作人" width="120" />
+          <ElTableColumn prop="createdAt" label="时间" width="180" />
+          <ElTableColumn prop="changedSummary" label="变更摘要" />
+          <ElTableColumn label="操作" width="100">
+            <template #default="{ row }">
+              <ElButton size="small" @click="confirmRollback(row.version)">回滚</ElButton>
+            </template>
+          </ElTableColumn>
+        </ElTable>
       </div>
     </div>
   </div>
