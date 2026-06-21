@@ -24,4 +24,13 @@ public final class CurrentUser {
         }
         return p;
     }
+
+    /** 要求 SUPER_ADMIN;否则 401(未登录)或 403(非超管)。 */
+    public static JwtPrincipal requireSuperAdmin() {
+        JwtPrincipal p = require();
+        if (!"SUPER_ADMIN".equals(p.role())) {
+            throw new ApiException(ErrorCode.ADMIN_FORBIDDEN, "super admin only");
+        }
+        return p;
+    }
 }

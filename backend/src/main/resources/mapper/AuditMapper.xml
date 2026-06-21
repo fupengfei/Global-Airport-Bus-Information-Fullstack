@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.airportbus.audit.AuditMapper">
+  <insert id="insert" parameterType="map">
+    INSERT INTO audit_log(actor_id, actor_type, action, target_type, target_id, summary, ip, created_by)
+    VALUES(#{actorId}, #{actorType}, #{action}, #{targetType}, #{targetId}, #{summary}, #{ip}, #{actorType})
+  </insert>
+  <select id="list" resultType="com.airportbus.audit.AuditMapper$Row">
+    SELECT id, actor_id AS actorId, actor_type AS actorType, action, target_type AS targetType,
+           target_id AS targetId, summary, ip, created_at AS createdAt
+    FROM audit_log
+    WHERE deleted=0
+    <if test="actor != null"> AND actor_id=#{actor} </if>
+    <if test="action != null"> AND action=#{action} </if>
+    ORDER BY created_at DESC, id DESC
+    LIMIT #{limit}
+  </select>
+</mapper>

@@ -30,4 +30,35 @@ public interface BusWriteMapper {
     void insertImage(@Param("busId") Long busId, @Param("url") String url, @Param("caption") String caption);
     void insertFile(@Param("busId") Long busId, @Param("name") String name, @Param("url") String url);
     void insertAlert(Map<String, Object> row);     // busId, type, message, startDate, endDate
+
+    /** 读当前 version + content_hash(乐观锁/变更判定用);不存在返回 null。 */
+    VersionHash selectVersionHash(@Param("sourceId") String sourceId);
+
+    /** 更新 bus 全字段 + content_hash + version(=#{newVersion}) + last_updated。 */
+    void updateBusFull(java.util.Map<String, Object> row);
+
+    /** 核对无误:仅更新 last_verified_at/by + updated_by。 */
+    void updateVerify(@Param("sourceId") String sourceId,
+                      @Param("at") java.time.LocalDateTime at,
+                      @Param("actor") String actor);
+
+    /** 软删线路。 */
+    void softDeleteBus(@Param("sourceId") String sourceId, @Param("actor") String actor);
+
+    record VersionHash(int version, String contentHash) {}
+
+    /** 通过 source_id 查 airport 内部数字 id(rollback 时用)。 */
+    int selectAirportIdBySource(@Param("sourceId") String sourceId);
+
+    /** 通过 airport id 查 IATA code。 */
+    String selectAirportCodeById(@Param("airportId") long airportId);
+
+    /** 查 admin 视图额外元数据:机场 code + 最后核对时间。 */
+    AdminMeta selectAdminMeta(@Param("sourceId") String sourceId);
+
+    record AdminMeta(String airportCode, java.time.LocalDateTime lastVerifiedAt) {}
+
+    java.util.List<AdminTreeRow> selectAdminTree();
+    record AdminTreeRow(String countryCode, String countryName, String cityName,
+                        String airportCode, String airportName, String busSourceId, String busRoute) {}
 }

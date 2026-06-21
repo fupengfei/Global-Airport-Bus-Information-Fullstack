@@ -28,7 +28,7 @@
   </update>
 
   <select id="findBusId" resultType="java.lang.Long">
-    SELECT id FROM bus_route WHERE source_id = #{sourceId}
+    SELECT id FROM bus_route WHERE source_id = #{sourceId} AND deleted = 0
   </select>
   <insert id="insertBus" useGeneratedKeys="true" keyProperty="id" parameterType="map">
     INSERT INTO bus_route(airport_id, source_id, route, destination, operator, official_url,
@@ -61,4 +61,52 @@
     INSERT INTO bus_alert(bus_route_id, type, message, start_date, end_date)
     VALUES(#{busId}, #{type}, #{message}, #{startDate}, #{endDate})
   </insert>
+
+  <select id="selectVersionHash" resultType="com.airportbus.bus.mapper.BusWriteMapper$VersionHash">
+    SELECT version, content_hash AS contentHash FROM bus_route
+    WHERE source_id = #{sourceId} AND deleted = 0
+  </select>
+
+  <update id="updateBusFull" parameterType="map">
+    UPDATE bus_route SET airport_id=#{airportId}, route=#{route}, destination=#{destination},
+      operator=#{operator}, official_url=#{officialUrl}, duration=#{duration}, price=#{price},
+      operating_hours=#{operatingHours}, last_updated=#{lastUpdated}, fetch_failed=#{fetchFailed},
+      content_hash=#{contentHash}, version=#{newVersion}, updated_by=#{actor}
+    WHERE id=#{id}
+  </update>
+
+  <update id="updateVerify">
+    UPDATE bus_route SET last_verified_at=#{at}, last_verified_by=#{actor}, updated_by=#{actor}
+    WHERE source_id=#{sourceId} AND deleted=0
+  </update>
+
+  <update id="softDeleteBus">
+    UPDATE bus_route SET deleted=1, updated_by=#{actor}
+    WHERE source_id=#{sourceId} AND deleted=0
+  </update>
+
+  <select id="selectAirportIdBySource" resultType="int">
+    SELECT a.id FROM bus_route b JOIN airport a ON a.id=b.airport_id
+    WHERE b.source_id=#{sourceId} AND b.deleted=0
+  </select>
+
+  <select id="selectAirportCodeById" resultType="string">
+    SELECT code FROM airport WHERE id=#{airportId}
+  </select>
+
+  <select id="selectAdminMeta" resultType="com.airportbus.bus.mapper.BusWriteMapper$AdminMeta">
+    SELECT a.code AS airportCode, b.last_verified_at AS lastVerifiedAt
+    FROM bus_route b JOIN airport a ON a.id=b.airport_id
+    WHERE b.source_id=#{sourceId} AND b.deleted=0
+  </select>
+
+  <select id="selectAdminTree" resultType="com.airportbus.bus.mapper.BusWriteMapper$AdminTreeRow">
+    SELECT c.code AS countryCode, c.name AS countryName, ci.name AS cityName,
+           a.code AS airportCode, a.name AS airportName, b.source_id AS busSourceId, b.route AS busRoute
+    FROM country c JOIN city ci ON ci.country_id=c.id
+    JOIN airport a ON a.city_id=ci.id
+    LEFT JOIN bus_route b ON b.airport_id=a.id AND b.deleted=0
+    WHERE c.deleted=0 AND ci.deleted=0 AND a.deleted=0
+    ORDER BY c.name, ci.name, a.name, b.route
+  </select>
 </mapper>
