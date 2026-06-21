@@ -16,7 +16,7 @@
   </select>
 
   <select id="selectPage" resultType="com.airportbus.message.Message">
-    SELECT m.id, m.user_id AS userId, m.template_code AS templateCode, m.params_json AS paramsJson,
+    SELECT m.id, m.user_id AS userId, m.template_code AS templateCode, m.params_json AS params,
            br.source_id AS relatedSourceId, m.is_read AS isRead, m.created_at AS createdAt
     FROM message m
     LEFT JOIN bus_route br ON br.id = m.related_bus_route_id

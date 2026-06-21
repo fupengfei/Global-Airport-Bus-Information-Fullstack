@@ -67,6 +67,7 @@ class MessageApiIT {
                 .andExpect(status().isOk()).andExpect(jsonPath("$.count").value(1));
         String listRes = mvc.perform(get("/api/v1/messages").header("Authorization","Bearer "+tok))
                 .andExpect(status().isOk()).andExpect(jsonPath("$[0].templateCode").value("BUS_UPDATED"))
+                .andExpect(jsonPath("$[0].params.route").value("VAB 1"))
                 .andReturn().getResponse().getContentAsString();
         long id = om.readTree(listRes).get(0).get("id").asLong();
         mvc.perform(post("/api/v1/messages/read").header("Authorization","Bearer "+tok)

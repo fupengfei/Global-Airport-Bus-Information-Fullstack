@@ -66,7 +66,7 @@ class MessageServiceIT {
         List<Message> page = service.list(u1, 20, 0);
         assertThat(page).hasSize(1);
         assertThat(page.get(0).templateCode()).isEqualTo("BUS_UPDATED");
-        assertThat(page.get(0).paramsJson()).contains("price").contains("€13");
+        assertThat(page.get(0).params()).contains("price").contains("€13");
     }
 
     @Test void fanOutUpdated_isIdempotent_onSameVersion() {
