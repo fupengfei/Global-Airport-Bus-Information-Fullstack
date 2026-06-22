@@ -13,7 +13,7 @@
 5. **实现** — `superpowers:subagent-driven-development`:每个任务派发**全新上下文的子代理**实现,严格 **TDD(先写失败测试 red → 实现 green)**,实现后过**两阶段评审**(先 spec 合规、再代码质量;核心任务用更强模型 opus 深评)。评审抓出并修复了多处真实问题(Redis 缓存命中 500、charset 混淆、`@MapperScan` 切片回归、NFC 测试缺口等)。
 6. **收尾** — 整体 final code review 确认集成一致性与可合并性,再用 `superpowers:finishing-a-development-branch` 合并。
 
-> 全部后端 9 单测 + 7 集成测试(Testcontainers 真 MySQL/Redis)、前端 9 测试 + 类型检查零错通过;`docker compose up` 一键起全栈端到端验证。
+> 截至当前全量:后端 35 个测试类(含 23 个 Testcontainers 真 MySQL/Redis 集成测试 `*IT`)、前端 32 个测试 + 类型检查零错通过;`docker compose up` 一键起全栈端到端验证。
 
 ## 技术栈
 
@@ -50,10 +50,14 @@ docker compose up -d --build      # mysql + redis + 后端 + 前端
 ### 本地开发(热重载)
 
 ```bash
-docker compose up -d mysql redis
-cd backend && mvn spring-boot:run         # :8080
-cd frontend && npm install && npm run dev  # :5173,已配 /api 代理到 :8080
+docker compose up -d mysql redis           # 只起依赖(宿主端口 3307 / 6380,避开本机已有的 MySQL/Redis)
+cd backend && SPRING_PROFILES_ACTIVE=local mvn spring-boot:run   # :8080,local profile 已指向 3307/6380 + 开启种子导入
+cd frontend && npm install && npm run dev   # :5173,已配 /api 代理到 :8080
 ```
+
+> 注意:后端默认 profile 连 3306;本地用 Docker 起的 MySQL 暴露在 **3307**,所以本地开发必须带 `SPRING_PROFILES_ACTIVE=local`(无 `mvnw`,用系统 `mvn`,需 Java 21)。
+>
+> 跑测试:`mvn test`(单测)/ `mvn test -Dtest='*IT'`(Testcontainers 集成测试,需 Docker)/ 前端 `npm test`。
 
 ## 下一步
 
