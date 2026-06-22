@@ -55,6 +55,22 @@ public class MessageService {
         favorites.softDeleteByBusRouteId(e.busRouteId(), "system");
     }
 
+    /** 工单回复站内信:单人定向直插(非 BusEvent 异步扇出)。dedup 按 replyId 幂等。 */
+    @Transactional
+    public void notifyTicketReplied(long userId, long ticketId, long replyId) {
+        Map<String, Object> params = new LinkedHashMap<>();
+        params.put("ticketId", ticketId);
+        Map<String, Object> row = new HashMap<>();
+        row.put("userId", userId);
+        row.put("templateCode", "TICKET_REPLIED");
+        row.put("paramsJson", writeJson(params));
+        row.put("relatedBusRouteId", null);
+        row.put("dedupKey", "ticket:" + ticketId + ":reply:" + replyId);
+        row.put("actor", "system");
+        mapper.batchInsert(List.of(row));
+        counter.invalidate(userId);
+    }
+
     /** 对账回填:对单个 (user, bus, version) 补一条 BUS_UPDATED(幂等)。 */
     @Transactional
     public void backfill(MessageMapper.Backfill b) {

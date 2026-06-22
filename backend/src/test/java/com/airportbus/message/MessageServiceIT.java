@@ -94,4 +94,19 @@ class MessageServiceIT {
         service.delete(u1, id);
         assertThat(service.list(u1, 20, 0)).isEmpty();
     }
+
+    @Test
+    void notifyTicketRepliedInsertsSingleUnread() {
+        AppUser u = new AppUser(); u.username="ticketee"; u.email="ticketee@x.com"; u.passwordHash="x";
+        u.locale="zh-CN"; u.role="USER"; u.emailVerified=false; users.insertUser(u);
+
+        service.notifyTicketReplied(u.id, 1042L, 99L);
+
+        assertThat(service.unreadCount(u.id)).isEqualTo(1);
+        List<Message> list = service.list(u.id, 20, 0);
+        assertThat(list).hasSize(1);
+        assertThat(list.get(0).templateCode()).isEqualTo("TICKET_REPLIED");
+        assertThat(list.get(0).params()).contains("\"ticketId\":1042");
+        assertThat(list.get(0).relatedSourceId()).isNull();
+    }
 }
