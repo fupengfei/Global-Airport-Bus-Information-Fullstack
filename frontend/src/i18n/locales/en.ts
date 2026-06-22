@@ -49,4 +49,12 @@ export default {
     field: { route: 'Route', destination: 'Destination', operator: 'Operator', officialUrl: 'Official site',
              duration: 'Duration', price: 'Price', operatingHours: 'Operating hours', lastUpdated: 'Data date' },
   },
+  report: {
+    trigger: '⚠️ Spotted an error? Report it', title: 'Report a data error',
+    sub: 'One-click, no login required. Admins will review it.',
+    descLabel: 'What is wrong', descPh: 'e.g. last bus is actually 23:30 not 24:00; or a stop was removed…',
+    contactLabel: 'Contact (optional)', contactPh: 'Email / phone so we can follow up (optional)',
+    submit: 'Submit', cancel: 'Cancel', sent: 'Received, thanks for the feedback!', failed: 'Submit failed, please retry later.',
+    descRequired: 'Please describe the problem.',
+  },
 }

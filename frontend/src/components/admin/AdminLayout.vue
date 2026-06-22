@@ -8,6 +8,7 @@ const nav = [
   { to: { name: 'admin-hotness' }, label: '热度榜单', icon: '🔥' },
   { to: { name: 'admin-buses' }, label: '巴士维护', icon: '🚌' },
   { to: { name: 'admin-audit' }, label: '操作记录', icon: '🧾' },
+  { to: { name: 'admin-corrections' }, label: '纠错队列', icon: '⚠️' },
 ]
 </script>
 
