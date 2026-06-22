@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { createI18n } from 'vue-i18n'
 import zhCN from '../i18n/locales/zh-CN'
 import * as api from '../api/corrections'
@@ -29,7 +29,7 @@ describe('ReportModal', () => {
     await w.find('[data-test=report-trigger]').trigger('click')
     await w.find('[data-test=report-desc]').setValue('末班车是23:30')
     await w.find('[data-test=report-submit]').trigger('click')
-    await new Promise((r) => setTimeout(r))
+    await flushPromises()
     expect(api.submitCorrection).toHaveBeenCalledWith({ sourceId: 'vie-vab1', description: '末班车是23:30', contact: '' })
     expect(w.text()).toContain('已收到')
   })

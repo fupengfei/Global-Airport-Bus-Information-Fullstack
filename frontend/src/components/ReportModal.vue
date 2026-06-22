@@ -10,18 +10,23 @@ const description = ref('')
 const contact = ref('')
 const sent = ref(false)
 const error = ref('')
+const submitting = ref(false)
 
 function show() { open.value = true; sent.value = false; error.value = '' }
-function close() { open.value = false; description.value = ''; contact.value = '' }
+function close() { open.value = false; description.value = ''; contact.value = ''; error.value = '' }
 
 async function submit() {
+  if (submitting.value) return
   if (!description.value.trim()) { error.value = t('report.descRequired'); return }
   error.value = ''
+  submitting.value = true
   try {
     await submitCorrection({ sourceId: props.sourceId, description: description.value.trim(), contact: contact.value.trim() })
     sent.value = true
   } catch {
     error.value = t('report.failed')
+  } finally {
+    submitting.value = false
   }
 }
 </script>
@@ -46,7 +51,7 @@ async function submit() {
         </div>
         <p v-if="error" class="formNote" style="color:var(--alert-red)" data-test="report-error">{{ error }}</p>
         <div class="modalActions">
-          <button class="btn btn-primary" data-test="report-submit" @click="submit">{{ t('report.submit') }}</button>
+          <button class="btn btn-primary" data-test="report-submit" :disabled="submitting" @click="submit">{{ t('report.submit') }}</button>
           <button class="btn btn-ghost" @click="close">{{ t('report.cancel') }}</button>
         </div>
       </template>
