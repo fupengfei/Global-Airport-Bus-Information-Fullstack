@@ -48,3 +48,15 @@ export function asApiError(err: unknown): ApiError | null {
   if (e.isAxiosError && e.response?.data?.code) return e.response.data
   return null
 }
+
+// 后端错误 message 是开发用英文串(如 "bad code")。这里按 code 映射到本地化文案,
+// 有对应 i18n 键(errors.<CODE>)则用之,否则回落后端 message,再回落通用提示。
+export function apiErrorMessage(
+  err: unknown,
+  t: (k: string) => string,
+  te: (k: string) => boolean,
+): string {
+  const ae = asApiError(err)
+  if (ae && te(`errors.${ae.code}`)) return t(`errors.${ae.code}`)
+  return ae?.message || t('auth.genericError')
+}

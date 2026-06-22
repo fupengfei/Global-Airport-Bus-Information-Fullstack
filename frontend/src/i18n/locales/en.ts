@@ -1,6 +1,17 @@
 export default {
   app: { title: 'Airport Bus Info', login: 'Log in / Sign up' },
   nav: { home: 'Home' },
+  errors: {
+    INVALID_CODE: 'Incorrect or expired code — please request a new one',
+    INVALID_INPUT: 'Invalid input, please check and try again',
+    EMAIL_TAKEN: 'This email is already registered',
+    USERNAME_TAKEN: 'This username is already taken',
+    RATE_LIMITED: 'Too many attempts, please try again later',
+    INVALID_CREDENTIALS: 'Incorrect username or password',
+    INVALID_TOKEN: 'Your session or link has expired, please try again',
+    UNAUTHORIZED: 'Please sign in first',
+    MAIL_SEND_FAILED: 'Failed to send email, please try again later',
+  },
   home: {
     kicker: 'Airport Ground Transport',
     title: 'Airport Bus Info',

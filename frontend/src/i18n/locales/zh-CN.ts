@@ -1,6 +1,17 @@
 export default {
   app: { title: '机场巴士信息', login: '登录 / 注册' },
   nav: { home: '首页' },
+  errors: {
+    INVALID_CODE: '验证码错误或已过期,请重新获取',
+    INVALID_INPUT: '输入有误,请检查后重试',
+    EMAIL_TAKEN: '该邮箱已被注册',
+    USERNAME_TAKEN: '该用户名已被占用',
+    RATE_LIMITED: '操作过于频繁,请稍后再试',
+    INVALID_CREDENTIALS: '用户名或密码错误',
+    INVALID_TOKEN: '登录或链接已失效,请重新操作',
+    UNAUTHORIZED: '请先登录',
+    MAIL_SEND_FAILED: '邮件发送失败,请稍后重试',
+  },
   home: {
     kicker: 'Airport Ground Transport',
     title: '机场巴士信息',

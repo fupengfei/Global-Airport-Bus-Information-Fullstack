@@ -4,9 +4,9 @@ import { useI18n } from 'vue-i18n'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '../stores/auth'
 import { sendRegisterCode, forgot } from '../api/auth'
-import { asApiError } from '../api/client'
+import { apiErrorMessage } from '../api/client'
 
-const { t } = useI18n()
+const { t, te } = useI18n()
 const router = useRouter()
 const route = useRoute()
 const auth = useAuth()
@@ -27,7 +27,7 @@ const ru = ref(''); const re = ref(''); const rc = ref(''); const rp = ref('')
 const codeCountdown = ref(0)
 const fe = ref(''); const sent = ref(false)
 
-function fail(e: unknown) { err.value = asApiError(e)?.message ?? t('auth.genericError') }
+function fail(e: unknown) { err.value = apiErrorMessage(e, t, te) }
 
 async function doLogin() {
   err.value = ''; busy.value = true

@@ -6,11 +6,11 @@ import { useAuth } from '../stores/auth'
 import { changePassword } from '../api/auth'
 import { listFavorites } from '../api/favorites'
 import type { BusDetail } from '../api/bus'
-import { asApiError } from '../api/client'
+import { apiErrorMessage } from '../api/client'
 import BusCard from '../components/BusCard.vue'
 import StateBlock from '../components/StateBlock.vue'
 
-const { t } = useI18n()
+const { t, te } = useI18n()
 const router = useRouter()
 const auth = useAuth()
 const oldPw = ref(''); const newPw = ref(''); const msg = ref(''); const err = ref('')
@@ -29,7 +29,7 @@ async function changePw() {
   try {
     await changePassword(oldPw.value, newPw.value)
     msg.value = t('auth.pwChanged'); oldPw.value = ''; newPw.value = ''
-  } catch (e) { err.value = asApiError(e)?.message ?? t('auth.genericError') }
+  } catch (e) { err.value = apiErrorMessage(e, t, te) }
 }
 async function doLogout() { await auth.logout(); router.push('/') }
 </script>
