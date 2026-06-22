@@ -68,6 +68,32 @@ public class TicketService {
         return tickets.selectById(ticketId);
     }
 
+    @Transactional
+    public TicketThread replyAsAdmin(long adminUserId, long ticketId, String body) {
+        requireBody(body);
+        Ticket t = requireTicket(ticketId);
+        long replyId = insertReply(ticketId, "ADMIN", adminUserId, body.trim());
+        tickets.updateStatusAndLastReply(ticketId, "REPLIED");
+        messages.notifyTicketReplied(t.userId(), ticketId, replyId); // 单人定向站内信(切片 B)
+        return thread(ticketId);
+    }
+
+    @Transactional
+    public Ticket closeAsAdmin(long ticketId) {
+        requireTicket(ticketId);
+        tickets.updateStatus(ticketId, "CLOSED");
+        return tickets.selectById(ticketId);
+    }
+
+    public List<Ticket> listForAdmin(String status, int limit, int offset) {
+        return tickets.selectPage(status, page(limit), Math.max(offset, 0));
+    }
+
+    public TicketThread getForAdmin(long ticketId) {
+        Ticket t = requireTicket(ticketId);
+        return new TicketThread(t, replies.selectByTicket(ticketId));
+    }
+
     // ---- 内部 helper ----
     private TicketThread thread(long ticketId) {
         return new TicketThread(tickets.selectById(ticketId), replies.selectByTicket(ticketId));

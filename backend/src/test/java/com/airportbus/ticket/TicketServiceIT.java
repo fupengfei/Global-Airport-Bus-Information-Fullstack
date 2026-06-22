@@ -35,6 +35,7 @@ class TicketServiceIT {
     }
     @Autowired TicketService service;
     @Autowired UserMapper users;
+    @Autowired com.airportbus.message.MessageService messages;
 
     private long newUser(String name) {
         AppUser u = new AppUser(); u.username=name; u.email=name+"@x.com"; u.passwordHash="x";
@@ -106,5 +107,32 @@ class TicketServiceIT {
         long owner = newUser("u_co"); long other = newUser("u_co2");
         long tid = service.create(owner, null, "x").ticket().id();
         assertThatThrownBy(() -> service.closeAsUser(other, tid)).isInstanceOf(ApiException.class);
+    }
+
+    @Test
+    void adminReplySetsRepliedAndNotifiesUser() {
+        long uid = newUser("u_adminreply");
+        long tid = service.create(uid, null, "请帮忙核对").ticket().id();
+        TicketThread th = service.replyAsAdmin(7001L, tid, "已核实并更新");
+        assertThat(th.ticket().status()).isEqualTo("REPLIED");
+        assertThat(th.replies()).hasSize(2);
+        assertThat(th.replies().get(1).authorType()).isEqualTo("ADMIN");
+        // 用户收到 1 条 TICKET_REPLIED 站内信
+        assertThat(messages.unreadCount(uid)).isEqualTo(1);
+    }
+
+    @Test
+    void adminCloseSetsClosed() {
+        long uid = newUser("u_adminclose");
+        long tid = service.create(uid, null, "x").ticket().id();
+        Ticket t = service.closeAsAdmin(tid);
+        assertThat(t.status()).isEqualTo("CLOSED");
+    }
+
+    @Test
+    void listForAdminSeesAllTickets() {
+        long a = newUser("u_adm_a"); long b = newUser("u_adm_b");
+        service.create(a, null, "a"); service.create(b, null, "b");
+        assertThat(service.listForAdmin(null, 50, 0).size()).isGreaterThanOrEqualTo(2);
     }
 }
