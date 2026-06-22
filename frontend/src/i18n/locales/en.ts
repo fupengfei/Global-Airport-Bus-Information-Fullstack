@@ -46,6 +46,7 @@ export default {
   msg: {
     title: 'Messages', empty: 'No messages', markRead: 'Mark read', delete: 'Delete', viewDetail: 'View',
     busUpdated: 'Route {route} updated', busOffline: 'Route {route} discontinued', unknown: 'You have a new notification',
+    ticketReplied: 'Your ticket #{ticketId} has a new reply',
     field: { route: 'Route', destination: 'Destination', operator: 'Operator', officialUrl: 'Official site',
              duration: 'Duration', price: 'Price', operatingHours: 'Operating hours', lastUpdated: 'Data date' },
   },
@@ -56,5 +57,18 @@ export default {
     contactLabel: 'Contact (optional)', contactPh: 'Email / phone so we can follow up (optional)',
     submit: 'Submit', cancel: 'Cancel', sent: 'Received, thanks for the feedback!', failed: 'Submit failed, please retry later.',
     descRequired: 'Please describe the problem.',
+  },
+  ticket: {
+    nav: 'Tickets', title: 'Suggestion Tickets',
+    desc: 'Submit a suggestion or correction. After an admin replies the status becomes "Replied"; replying again reopens it.',
+    newBtn: '+ New ticket', newTitle: 'New ticket',
+    sourceLabel: 'Related route (optional)', sourcePlaceholder: 'Route source_id, e.g. vie-vab1',
+    bodyLabel: 'Issue / suggestion', bodyPlaceholder: 'Describe the issue or suggestion…',
+    submit: 'Submit', reply: 'Reply', close: 'Close ticket', empty: 'No tickets yet',
+    replyPlaceholder: 'Replying reopens the ticket…',
+    closedNote: 'Closed. Replying again reopens it as "Open".',
+    me: 'Me', admin: 'Admin',
+    status: { OPEN: 'Open', REPLIED: 'Replied', CLOSED: 'Closed' },
+    queueTitle: 'Ticket queue', queueDesc: 'User-submitted suggestion/correction tickets. The user is notified in-app after a reply.',
   },
 }

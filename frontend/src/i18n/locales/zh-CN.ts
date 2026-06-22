@@ -46,6 +46,7 @@ export default {
   msg: {
     title: '站内信', empty: '暂无消息', markRead: '标记已读', delete: '删除', viewDetail: '查看详情',
     busUpdated: '线路 {route} 已更新', busOffline: '线路 {route} 已下线', unknown: '您有一条新通知',
+    ticketReplied: '您的工单 #{ticketId} 有新回复',
     field: { route: '线路名', destination: '目的地', operator: '运营方', officialUrl: '官网',
              duration: '时长', price: '价格', operatingHours: '运营时间', lastUpdated: '数据日期' },
   },
@@ -56,5 +57,18 @@ export default {
     contactLabel: '联系方式(可选)', contactPh: '邮箱 / 电话,方便我们回访(可留空)',
     submit: '提交纠错', cancel: '取消', sent: '已收到,感谢反馈!', failed: '提交失败,请稍后再试。',
     descRequired: '请填写问题描述。',
+  },
+  ticket: {
+    nav: '工单', title: '建议工单',
+    desc: '提交建议或纠错,管理员回复后状态变为「已回复」,你再回复会重新打开。',
+    newBtn: '+ 新建工单', newTitle: '新建工单',
+    sourceLabel: '关联线路(可选)', sourcePlaceholder: '线路 source_id,如 vie-vab1',
+    bodyLabel: '问题 / 建议', bodyPlaceholder: '请描述你遇到的问题或建议…',
+    submit: '提交', reply: '回复', close: '关闭工单', empty: '暂无工单',
+    replyPlaceholder: '继续回复会把工单重新打开…',
+    closedNote: '已关闭。再次回复会重新打开为「待处理」。',
+    me: '我', admin: '管理员',
+    status: { OPEN: '待处理', REPLIED: '已回复', CLOSED: '已关闭' },
+    queueTitle: '工单队列', queueDesc: '用户提交的建议/纠错工单。回复后用户会收到站内信。',
   },
 }
