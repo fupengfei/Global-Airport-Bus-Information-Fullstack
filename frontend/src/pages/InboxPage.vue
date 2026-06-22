@@ -42,7 +42,8 @@ defineExpose({ remove, markAllRead })
         <div class="msgMeta formNote" style="margin-top:6px">{{ r.raw.createdAt }}</div>
       </div>
       <div style="display:flex;gap:8px;flex-shrink:0">
-        <router-link v-if="r.raw.relatedSourceId" class="btn btn-ghost btn-sm" :to="`/bus/${r.raw.relatedSourceId}`">{{ t('msg.viewDetail') }}</router-link>
+        <router-link v-if="r.view.link" class="btn btn-ghost btn-sm" :to="r.view.link">{{ t('msg.viewDetail') }}</router-link>
+        <router-link v-else-if="r.raw.relatedSourceId" class="btn btn-ghost btn-sm" :to="`/bus/${r.raw.relatedSourceId}`">{{ t('msg.viewDetail') }}</router-link>
         <button class="btn btn-ghost btn-sm" @click="remove(r.raw.id)">{{ t('msg.delete') }}</button>
       </div>
     </div>

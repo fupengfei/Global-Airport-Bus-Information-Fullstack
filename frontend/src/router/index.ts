@@ -20,6 +20,14 @@ export const router = createRouter({
       },
     },
     {
+      path: '/tickets', name: 'tickets',
+      component: () => import('../pages/TicketsPage.vue'),
+      beforeEnter: (to) => {
+        const auth = useAuth()
+        return auth.isAuthed ? true : { name: 'login', query: { redirect: to.fullPath } }
+      },
+    },
+    {
       path: '/admin',
       component: () => import('../components/admin/AdminLayout.vue'),
       beforeEnter: adminGuard,
@@ -30,6 +38,7 @@ export const router = createRouter({
         { path: 'buses', name: 'admin-buses', component: () => import('../pages/admin/AdminBusesPage.vue') },
         { path: 'audit', name: 'admin-audit', component: () => import('../pages/admin/AdminAuditPage.vue') },
         { path: 'corrections', name: 'admin-corrections', component: () => import('../pages/admin/AdminCorrectionsPage.vue') },
+        { path: 'tickets', name: 'admin-tickets', component: () => import('../pages/admin/AdminTicketsPage.vue') },
       ],
     },
   ],

@@ -1,7 +1,7 @@
 import type { MessageParams } from '../api/messages'
 
 export interface RenderedDiff { label: string; oldValue: string | null; newValue: string | null }
-export interface RenderedMessage { title: string; diffs: RenderedDiff[] }
+export interface RenderedMessage { title: string; diffs: RenderedDiff[]; link?: string }
 
 type T = (key: string, named?: Record<string, unknown>) => string
 
@@ -16,6 +16,9 @@ export function renderMessage(templateCode: string, params: MessageParams, t: T)
   }
   if (templateCode === 'BUS_OFFLINE') {
     return { title: t('msg.busOffline', { route }), diffs: [] }
+  }
+  if (templateCode === 'TICKET_REPLIED') {
+    return { title: t('msg.ticketReplied', { ticketId: params?.ticketId }), diffs: [], link: `/tickets/${params?.ticketId}` }
   }
   return { title: t('msg.unknown'), diffs: [] }
 }

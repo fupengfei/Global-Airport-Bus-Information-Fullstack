@@ -7,6 +7,7 @@ const t = (key: string, named?: Record<string, unknown>) => {
     'msg.busOffline': '线路 {route} 已下线',
     'msg.unknown': '您有一条新通知',
     'msg.field.price': '价格',
+    'msg.ticketReplied': '您的工单 #{ticketId} 有新回复',
   }
   let s = map[key] ?? key
   if (named) for (const k of Object.keys(named)) s = s.replace(`{${k}}`, String(named[k]))
@@ -32,5 +33,11 @@ describe('renderMessage', () => {
   it('unknown diff field uses raw field name', () => {
     const r = renderMessage('BUS_UPDATED', { route: 'X', changed: [{ field: 'weird', oldValue: 'a', newValue: 'b' }] }, t as any)
     expect(r.diffs[0].label).toBe('msg.field.weird') // t 兜底返回 key,前端展示原 key 亦可接受
+  })
+  it('TICKET_REPLIED title + ticket link', () => {
+    const r = renderMessage('TICKET_REPLIED', { ticketId: 1042 } as any, t as any)
+    expect(r.title).toBe('您的工单 #1042 有新回复')
+    expect(r.diffs).toEqual([])
+    expect(r.link).toBe('/tickets/1042')
   })
 })

@@ -46,6 +46,7 @@ export default {
   msg: {
     title: 'Nachrichten', empty: 'Keine Nachrichten', markRead: 'Als gelesen', delete: 'Löschen', viewDetail: 'Ansehen',
     busUpdated: 'Linie {route} aktualisiert', busOffline: 'Linie {route} eingestellt', unknown: 'Sie haben eine neue Benachrichtigung',
+    ticketReplied: 'Ihr Ticket #{ticketId} hat eine neue Antwort',
     field: { route: 'Linie', destination: 'Ziel', operator: 'Betreiber', officialUrl: 'Offizielle Seite',
              duration: 'Dauer', price: 'Preis', operatingHours: 'Betriebszeiten', lastUpdated: 'Datenstand' },
   },
@@ -56,5 +57,18 @@ export default {
     contactLabel: 'Kontakt (optional)', contactPh: 'E-Mail / Telefon für Rückfragen (optional)',
     submit: 'Senden', cancel: 'Abbrechen', sent: 'Erhalten, danke für das Feedback!', failed: 'Senden fehlgeschlagen, später erneut versuchen.',
     descRequired: 'Bitte das Problem beschreiben.',
+  },
+  ticket: {
+    nav: 'Tickets', title: 'Vorschlags-Tickets',
+    desc: 'Reichen Sie einen Vorschlag oder eine Korrektur ein. Nach einer Admin-Antwort wird der Status „Beantwortet"; eine erneute Antwort öffnet es wieder.',
+    newBtn: '+ Neues Ticket', newTitle: 'Neues Ticket',
+    sourceLabel: 'Zugehörige Linie (optional)', sourcePlaceholder: 'Linien-source_id, z. B. vie-vab1',
+    bodyLabel: 'Problem / Vorschlag', bodyPlaceholder: 'Beschreiben Sie das Problem oder den Vorschlag…',
+    submit: 'Absenden', reply: 'Antworten', close: 'Ticket schließen', empty: 'Noch keine Tickets',
+    replyPlaceholder: 'Eine Antwort öffnet das Ticket erneut…',
+    closedNote: 'Geschlossen. Eine erneute Antwort öffnet es wieder als „Offen".',
+    me: 'Ich', admin: 'Admin',
+    status: { OPEN: 'Offen', REPLIED: 'Beantwortet', CLOSED: 'Geschlossen' },
+    queueTitle: 'Ticket-Warteschlange', queueDesc: 'Von Nutzern eingereichte Vorschlags-/Korrektur-Tickets. Der Nutzer wird nach einer Antwort in der App benachrichtigt.',
   },
 }
