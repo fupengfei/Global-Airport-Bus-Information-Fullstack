@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.airportbus.ticket.mapper.TicketMapper">
+
+  <insert id="insert" parameterType="map" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+    INSERT INTO ticket (user_id, related_source_id, created_by)
+    VALUES (#{userId}, #{relatedSourceId}, #{createdBy})
+  </insert>
+
+  <select id="selectById" resultType="com.airportbus.ticket.Ticket">
+    SELECT id, user_id AS userId, related_source_id AS relatedSourceId, status,
+           last_reply_at AS lastReplyAt, created_at AS createdAt
+    FROM ticket WHERE id=#{id} AND deleted=0
+  </select>
+
+  <select id="selectByUser" resultType="com.airportbus.ticket.Ticket">
+    SELECT id, user_id AS userId, related_source_id AS relatedSourceId, status,
+           last_reply_at AS lastReplyAt, created_at AS createdAt
+    FROM ticket
+    WHERE deleted=0 AND user_id=#{userId}
+    <if test="status != null and status != ''"> AND status=#{status} </if>
+    ORDER BY last_reply_at DESC, id DESC
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+
+  <select id="selectPage" resultType="com.airportbus.ticket.Ticket">
+    SELECT id, user_id AS userId, related_source_id AS relatedSourceId, status,
+           last_reply_at AS lastReplyAt, created_at AS createdAt
+    FROM ticket
+    WHERE deleted=0
+    <if test="status != null and status != ''"> AND status=#{status} </if>
+    ORDER BY last_reply_at DESC, id DESC
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+
+  <update id="updateStatusAndLastReply">
+    UPDATE ticket SET status=#{status}, last_reply_at=NOW() WHERE id=#{id} AND deleted=0
+  </update>
+
+  <update id="updateStatus">
+    UPDATE ticket SET status=#{status} WHERE id=#{id} AND deleted=0
+  </update>
+</mapper>

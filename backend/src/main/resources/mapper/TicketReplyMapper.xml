@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.airportbus.ticket.mapper.TicketReplyMapper">
+
+  <insert id="insert" parameterType="map" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+    INSERT INTO ticket_reply (ticket_id, author_type, author_id, body, created_by)
+    VALUES (#{ticketId}, #{authorType}, #{authorId}, #{body}, #{createdBy})
+  </insert>
+
+  <select id="selectByTicket" resultType="com.airportbus.ticket.TicketReply">
+    SELECT id, ticket_id AS ticketId, author_type AS authorType, author_id AS authorId,
+           body, created_at AS createdAt
+    FROM ticket_reply
+    WHERE deleted=0 AND ticket_id=#{ticketId}
+    ORDER BY id ASC
+  </select>
+</mapper>
