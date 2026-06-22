@@ -20,6 +20,14 @@ export const router = createRouter({
       },
     },
     {
+      path: '/tickets', name: 'tickets',
+      component: () => import('../pages/TicketsPage.vue'),
+      beforeEnter: (to) => {
+        const auth = useAuth()
+        return auth.isAuthed ? true : { name: 'login', query: { redirect: to.fullPath } }
+      },
+    },
+    {
       path: '/admin',
       component: () => import('../components/admin/AdminLayout.vue'),
       beforeEnter: adminGuard,

@@ -29,6 +29,7 @@ onMounted(() => {
           <router-link data-test="bell" class="bell" to="/inbox" :aria-label="t('msg.title')">
             🔔<span v-if="messages.unread > 0" data-test="bell-dot" class="dot">{{ messages.unread }}</span>
           </router-link>
+          <router-link class="btn btn-ghost btn-sm" to="/tickets">{{ t('ticket.nav') }}</router-link>
           <router-link class="btn btn-ghost btn-sm" to="/me">{{ auth.user?.username ?? t('auth.profile') }}</router-link>
         </template>
       </div>
