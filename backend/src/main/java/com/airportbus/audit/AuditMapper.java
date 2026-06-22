@@ -1,9 +1,11 @@
 package com.airportbus.audit;
 
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
+@Mapper
 public interface AuditMapper {
     void insert(java.util.Map<String, Object> row); // actorId,actorType,action,targetType,targetId,summary,ip
 
