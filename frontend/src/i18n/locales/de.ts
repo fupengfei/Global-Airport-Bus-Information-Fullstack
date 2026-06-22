@@ -1,6 +1,17 @@
 export default {
   app: { title: 'Flughafen-Bus-Infos', login: 'Anmelden / Registrieren' },
   nav: { home: 'Startseite' },
+  errors: {
+    INVALID_CODE: 'Code ungültig oder abgelaufen – bitte neuen anfordern',
+    INVALID_INPUT: 'Ungültige Eingabe, bitte überprüfen',
+    EMAIL_TAKEN: 'Diese E-Mail ist bereits registriert',
+    USERNAME_TAKEN: 'Dieser Benutzername ist bereits vergeben',
+    RATE_LIMITED: 'Zu viele Versuche, bitte später erneut',
+    INVALID_CREDENTIALS: 'Benutzername oder Passwort falsch',
+    INVALID_TOKEN: 'Sitzung oder Link abgelaufen, bitte erneut versuchen',
+    UNAUTHORIZED: 'Bitte zuerst anmelden',
+    MAIL_SEND_FAILED: 'E-Mail konnte nicht gesendet werden, bitte später erneut',
+  },
   home: {
     kicker: 'Airport Ground Transport',
     title: 'Flughafen-Bus-Infos',

@@ -3,9 +3,9 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { reset } from '../api/auth'
-import { asApiError } from '../api/client'
+import { apiErrorMessage } from '../api/client'
 
-const { t } = useI18n()
+const { t, te } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const pw = ref(''); const err = ref(''); const done = ref(false); const busy = ref(false)
@@ -14,7 +14,7 @@ const token = String(route.query.token ?? '')
 async function submit() {
   err.value = ''; busy.value = true
   try { await reset(token, pw.value); done.value = true; setTimeout(() => router.push('/login'), 1500) }
-  catch (e) { err.value = asApiError(e)?.message ?? t('auth.genericError') }
+  catch (e) { err.value = apiErrorMessage(e, t, te) }
   finally { busy.value = false }
 }
 </script>
