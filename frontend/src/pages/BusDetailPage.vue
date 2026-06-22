@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/vue-query'
 import { getBusDetail } from '../api/bus'
 import StateBlock from '../components/StateBlock.vue'
 import BusCard from '../components/BusCard.vue'
+import ReportModal from '../components/ReportModal.vue'
 
 const { t } = useI18n()
 const props = defineProps<{ sourceId: string }>()
@@ -25,6 +26,7 @@ const { data, isLoading, isError } = useQuery({
 
     <StateBlock :loading="isLoading" :error="isError">
       <BusCard v-if="data" :bus="data" :detail-link="false" />
+      <ReportModal v-if="data" :source-id="sourceId" />
     </StateBlock>
   </div>
 </template>

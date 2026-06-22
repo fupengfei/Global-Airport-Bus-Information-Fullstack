@@ -49,4 +49,12 @@ export default {
     field: { route: '线路名', destination: '目的地', operator: '运营方', officialUrl: '官网',
              duration: '时长', price: '价格', operatingHours: '运营时间', lastUpdated: '数据日期' },
   },
+  report: {
+    trigger: '⚠️ 发现信息有误?上报纠错', title: '数据纠错上报',
+    sub: '一键上报,无需登录,管理员后台会处理。',
+    descLabel: '问题描述', descPh: '例:末班车实际是 23:30,不是 24:00;或某停靠站已取消…',
+    contactLabel: '联系方式(可选)', contactPh: '邮箱 / 电话,方便我们回访(可留空)',
+    submit: '提交纠错', cancel: '取消', sent: '已收到,感谢反馈!', failed: '提交失败,请稍后再试。',
+    descRequired: '请填写问题描述。',
+  },
 }

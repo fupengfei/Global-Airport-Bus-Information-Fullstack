@@ -49,4 +49,12 @@ export default {
     field: { route: 'Linie', destination: 'Ziel', operator: 'Betreiber', officialUrl: 'Offizielle Seite',
              duration: 'Dauer', price: 'Preis', operatingHours: 'Betriebszeiten', lastUpdated: 'Datenstand' },
   },
+  report: {
+    trigger: '⚠️ Fehler entdeckt? Melden', title: 'Datenfehler melden',
+    sub: 'Ein Klick, kein Login nötig. Admins prüfen es.',
+    descLabel: 'Was ist falsch', descPh: 'z.B. letzter Bus ist 23:30 statt 24:00; oder eine Haltestelle entfällt…',
+    contactLabel: 'Kontakt (optional)', contactPh: 'E-Mail / Telefon für Rückfragen (optional)',
+    submit: 'Senden', cancel: 'Abbrechen', sent: 'Erhalten, danke für das Feedback!', failed: 'Senden fehlgeschlagen, später erneut versuchen.',
+    descRequired: 'Bitte das Problem beschreiben.',
+  },
 }
