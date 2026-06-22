@@ -43,4 +43,10 @@ export default {
     resetSubmit: '重置密码', changePw: '修改密码', pwChanged: '密码已修改。',
     genericError: '操作失败,请重试。',
   },
+  msg: {
+    title: '站内信', empty: '暂无消息', markRead: '标记已读', delete: '删除', viewDetail: '查看详情',
+    busUpdated: '线路 {route} 已更新', busOffline: '线路 {route} 已下线', unknown: '您有一条新通知',
+    field: { route: '线路名', destination: '目的地', operator: '运营方', officialUrl: '官网',
+             duration: '时长', price: '价格', operatingHours: '运营时间', lastUpdated: '数据日期' },
+  },
 }

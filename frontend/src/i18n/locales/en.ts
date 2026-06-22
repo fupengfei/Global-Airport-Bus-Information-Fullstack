@@ -43,4 +43,10 @@ export default {
     resetSubmit: 'Reset password', changePw: 'Change password', pwChanged: 'Password changed.',
     genericError: 'Something went wrong, please retry.',
   },
+  msg: {
+    title: 'Messages', empty: 'No messages', markRead: 'Mark read', delete: 'Delete', viewDetail: 'View',
+    busUpdated: 'Route {route} updated', busOffline: 'Route {route} discontinued', unknown: 'You have a new notification',
+    field: { route: 'Route', destination: 'Destination', operator: 'Operator', officialUrl: 'Official site',
+             duration: 'Duration', price: 'Price', operatingHours: 'Operating hours', lastUpdated: 'Data date' },
+  },
 }

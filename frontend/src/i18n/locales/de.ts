@@ -43,4 +43,10 @@ export default {
     resetSubmit: 'Passwort zurücksetzen', changePw: 'Passwort ändern', pwChanged: 'Passwort geändert.',
     genericError: 'Etwas ist schiefgelaufen, bitte erneut versuchen.',
   },
+  msg: {
+    title: 'Nachrichten', empty: 'Keine Nachrichten', markRead: 'Als gelesen', delete: 'Löschen', viewDetail: 'Ansehen',
+    busUpdated: 'Linie {route} aktualisiert', busOffline: 'Linie {route} eingestellt', unknown: 'Sie haben eine neue Benachrichtigung',
+    field: { route: 'Linie', destination: 'Ziel', operator: 'Betreiber', officialUrl: 'Offizielle Seite',
+             duration: 'Dauer', price: 'Preis', operatingHours: 'Betriebszeiten', lastUpdated: 'Datenstand' },
+  },
 }

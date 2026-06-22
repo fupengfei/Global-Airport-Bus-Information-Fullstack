@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { adminGuard } from './adminGuard'
+import { useAuth } from '../stores/auth'
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -10,6 +11,14 @@ export const router = createRouter({
     { path: '/login', name: 'login', component: () => import('../pages/LoginPage.vue') },
     { path: '/reset-password', name: 'reset', component: () => import('../pages/ResetPasswordPage.vue') },
     { path: '/me', name: 'me', component: () => import('../pages/MePage.vue') },
+    {
+      path: '/inbox', name: 'inbox',
+      component: () => import('../pages/InboxPage.vue'),
+      beforeEnter: (to) => {
+        const auth = useAuth()
+        return auth.isAuthed ? true : { name: 'login', query: { redirect: to.fullPath } }
+      },
+    },
     {
       path: '/admin',
       component: () => import('../components/admin/AdminLayout.vue'),
