@@ -50,6 +50,24 @@ public class TicketService {
         return new TicketThread(t, replies.selectByTicket(ticketId));
     }
 
+    @Transactional
+    public TicketThread replyAsUser(long userId, long ticketId, String body) {
+        requireBody(body);
+        Ticket t = requireTicket(ticketId);
+        if (t.userId() != userId) throw new ApiException(ErrorCode.TICKET_FORBIDDEN, String.valueOf(ticketId));
+        insertReply(ticketId, "USER", userId, body.trim());
+        tickets.updateStatusAndLastReply(ticketId, "OPEN"); // 用户回复永远重开
+        return thread(ticketId);
+    }
+
+    @Transactional
+    public Ticket closeAsUser(long userId, long ticketId) {
+        Ticket t = requireTicket(ticketId);
+        if (t.userId() != userId) throw new ApiException(ErrorCode.TICKET_FORBIDDEN, String.valueOf(ticketId));
+        tickets.updateStatus(ticketId, "CLOSED");
+        return tickets.selectById(ticketId);
+    }
+
     // ---- 内部 helper ----
     private TicketThread thread(long ticketId) {
         return new TicketThread(tickets.selectById(ticketId), replies.selectByTicket(ticketId));

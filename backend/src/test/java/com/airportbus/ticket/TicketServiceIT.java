@@ -80,4 +80,31 @@ class TicketServiceIT {
         service.create(a, null, "a1"); service.create(b, null, "b1");
         assertThat(service.listMine(a, null, 20, 0)).allMatch(t -> t.userId() == a);
     }
+
+    @Test
+    void userReplyReopensAndAppends() {
+        long uid = newUser("u_reply");
+        long tid = service.create(uid, null, "建单").ticket().id();
+        // 先人为关闭,验证回复能重开
+        service.closeAsUser(uid, tid);
+        assertThat(service.getMine(uid, tid).ticket().status()).isEqualTo("CLOSED");
+        TicketThread th = service.replyAsUser(uid, tid, "补充一句");
+        assertThat(th.ticket().status()).isEqualTo("OPEN");
+        assertThat(th.replies()).hasSize(2);
+        assertThat(th.replies().get(1).authorType()).isEqualTo("USER");
+    }
+
+    @Test
+    void userReplyForbiddenForOther() {
+        long owner = newUser("u_ro"); long other = newUser("u_ro2");
+        long tid = service.create(owner, null, "x").ticket().id();
+        assertThatThrownBy(() -> service.replyAsUser(other, tid, "hi")).isInstanceOf(ApiException.class);
+    }
+
+    @Test
+    void userCloseForbiddenForOther() {
+        long owner = newUser("u_co"); long other = newUser("u_co2");
+        long tid = service.create(owner, null, "x").ticket().id();
+        assertThatThrownBy(() -> service.closeAsUser(other, tid)).isInstanceOf(ApiException.class);
+    }
 }
