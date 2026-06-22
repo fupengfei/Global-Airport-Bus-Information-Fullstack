@@ -1,7 +1,6 @@
 package com.airportbus.ticket;
 
 import com.airportbus.common.ApiException;
-import com.airportbus.ticket.api.dto.TicketDtos.CreateTicketRequest;
 import com.airportbus.user.mapper.UserMapper;
 import com.airportbus.user.model.AppUser;
 import org.junit.jupiter.api.Test;

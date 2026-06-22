@@ -43,7 +43,7 @@ defineExpose({ openThread, sendReply, close, replyDraft, threads })
       <ElTableColumn label="操作">
         <template #default="{ row }">
           <ElButton size="small" @click="openThread(row.id)">查看线程</ElButton>
-          <ElButton size="small" type="danger" @click="close(row.id)">关闭</ElButton>
+          <ElButton v-if="row.status !== 'CLOSED'" size="small" type="danger" @click="close(row.id)">关闭</ElButton>
           <div v-if="opened === row.id && threads[row.id]" style="margin-top:10px">
             <div v-for="rp in threads[row.id].replies" :key="rp.id"
                  class="bubble" :class="rp.authorType === 'ADMIN' ? 'admin' : 'user'">
