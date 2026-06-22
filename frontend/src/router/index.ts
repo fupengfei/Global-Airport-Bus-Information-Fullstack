@@ -29,6 +29,7 @@ export const router = createRouter({
         { path: 'hotness', name: 'admin-hotness', component: () => import('../pages/admin/AdminHotnessPage.vue') },
         { path: 'buses', name: 'admin-buses', component: () => import('../pages/admin/AdminBusesPage.vue') },
         { path: 'audit', name: 'admin-audit', component: () => import('../pages/admin/AdminAuditPage.vue') },
+        { path: 'corrections', name: 'admin-corrections', component: () => import('../pages/admin/AdminCorrectionsPage.vue') },
       ],
     },
   ],
