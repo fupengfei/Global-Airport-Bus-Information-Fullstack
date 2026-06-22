@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.airportbus.ticket.mapper.CorrectionMapper">
 
-  <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+  <insert id="insert" parameterType="map" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
     INSERT INTO correction_report (related_source_id, description, contact, reporter_ip, created_by)
     VALUES (#{relatedSourceId}, #{description}, #{contact}, #{reporterIp}, #{createdBy})
   </insert>

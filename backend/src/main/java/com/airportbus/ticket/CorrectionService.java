@@ -47,7 +47,9 @@ public class CorrectionService {
     }
 
     public List<CorrectionReport> listForAdmin(String status, int limit, int offset) {
-        return mapper.selectPage(status, limit, offset);
+        int lim = limit < 1 ? 20 : Math.min(limit, 100);
+        int off = Math.max(offset, 0);
+        return mapper.selectPage(status, lim, off);
     }
 
     /** @Audited 不放这里:它会触发 CurrentUser.require(),而 IT 直调本方法无主体会抛错。审计放在控制器方法上(见 Task 5)。 */
