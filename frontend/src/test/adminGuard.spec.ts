@@ -17,9 +17,9 @@ describe('isAdminRole', () => {
 describe('adminGuard', () => {
   beforeEach(() => { setActivePinia(createPinia()); localStorage.clear() })
 
-  it('redirects anonymous to login with redirect', async () => {
+  it('redirects anonymous to admin-login with redirect', async () => {
     const res = await adminGuard(to)
-    expect(res).toEqual({ name: 'login', query: { redirect: '/admin' } })
+    expect(res).toEqual({ name: 'admin-login', query: { redirect: '/admin' } })
   })
 
   it('redirects logged-in non-admin to home', async () => {
@@ -50,12 +50,12 @@ describe('adminGuard', () => {
     expect(res).toBe(true)
   })
 
-  it('falls back to login when loadMe throws', async () => {
+  it('falls back to admin-login when loadMe throws', async () => {
     const auth = useAuth()
     auth.accessToken = 'stale'
     auth.user = null
     vi.spyOn(auth, 'loadMe').mockRejectedValue(new Error('401'))
     const res = await adminGuard(to)
-    expect(res).toEqual({ name: 'login', query: { redirect: '/admin' } })
+    expect(res).toEqual({ name: 'admin-login', query: { redirect: '/admin' } })
   })
 })

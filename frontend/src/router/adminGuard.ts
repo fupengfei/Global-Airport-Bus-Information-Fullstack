@@ -9,9 +9,10 @@ export async function adminGuard(
   to: RouteLocationNormalized,
 ): Promise<boolean | RouteLocationRaw> {
   const auth = useAuth()
-  if (!auth.isAuthed) return { name: 'login', query: { redirect: to.fullPath } }
+  const loginRedirect: RouteLocationRaw = { name: 'admin-login', query: { redirect: to.fullPath } }
+  if (!auth.isAuthed) return loginRedirect
   if (!auth.user) {
-    try { await auth.loadMe() } catch { return { name: 'login', query: { redirect: to.fullPath } } }
+    try { await auth.loadMe() } catch { return loginRedirect }
   }
   if (!isAdminRole(auth.user?.role)) return { name: 'home' }
   return true
