@@ -1,0 +1,76 @@
+# 生产部署(独立文件,非 override):
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+#
+# 与开发版 docker-compose.yml 的区别:
+#   - MySQL / Redis / 后端不再映射到宿主公网端口,仅容器内网互通
+#   - 前端只绑定 127.0.0.1:8081,由宿主上的 Caddy/nginx 反代 + TLS 暴露公网
+#   - 所有密码来自 .env.prod(已被 .gitignore,绝不进仓库)
+#   - 全部服务 restart: unless-stopped
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?请在 .env.prod 设置}
+      MYSQL_DATABASE: airportbus
+      MYSQL_USER: airportbus
+      MYSQL_PASSWORD: ${DB_PASSWORD:?请在 .env.prod 设置}
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_0900_ai_ci
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p\"$$MYSQL_ROOT_PASSWORD\""]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes: ["mysql_data:/var/lib/mysql"]
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      mysql: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: airportbus
+      DB_PASSWORD: ${DB_PASSWORD:?请在 .env.prod 设置}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      SEED_ENABLED: "true"
+      # 种子管理员(Spring relaxed-binding → airportbus.seed.admin-*),生产务必改强密码
+      AIRPORTBUS_SEED_ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      AIRPORTBUS_SEED_ADMIN_PASSWORD: ${ADMIN_PASSWORD:?请在 .env.prod 设置}
+      # 真实 SMTP(留空则验证码打印到 docker compose logs app)
+      SPRING_MAIL_HOST: ${MAIL_HOST:-}
+      SPRING_MAIL_PORT: ${MAIL_PORT:-465}
+      SPRING_MAIL_USERNAME: ${MAIL_USERNAME:-}
+      SPRING_MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_ENABLE: "true"
+      AIRPORTBUS_MAIL_FROM: ${MAIL_FROM:-}
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 20s
+
+  web:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      app: { condition: service_healthy }
+    # 只绑本机回环:由宿主的 Caddy/nginx 反代 + TLS,不直接对公网
+    ports: ["127.0.0.1:8081:80"]
+
+volumes:
+  mysql_data:

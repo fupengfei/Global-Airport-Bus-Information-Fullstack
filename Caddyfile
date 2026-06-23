@@ -1,0 +1,11 @@
+# 宿主机 Caddy 反向代理 + 自动 HTTPS(Let's Encrypt)。
+# 把 yourdomain.com 换成你的域名(DNS A 记录已指向本服务器)。
+#
+# 安装:  curl -fsSL https://get.caddyserver.com | bash   (或见 caddyserver.com/docs/install)
+# 运行:  sudo caddy run --config ./Caddyfile          (前台)
+#   或:  sudo cp Caddyfile /etc/caddy/Caddyfile && sudo systemctl reload caddy
+
+yourdomain.com {
+    encode gzip
+    reverse_proxy 127.0.0.1:8081
+}
