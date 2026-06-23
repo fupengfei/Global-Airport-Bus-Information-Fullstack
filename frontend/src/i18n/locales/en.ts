@@ -54,6 +54,11 @@ export default {
     resetSubmit: 'Reset password', changePw: 'Change password', pwChanged: 'Password changed.',
     genericError: 'Something went wrong, please retry.',
   },
+  adminAuth: {
+    title: 'Admin Console Login',
+    subtitle: 'Administrators only',
+    noPermission: 'This account has no admin access',
+  },
   msg: {
     title: 'Messages', empty: 'No messages', markRead: 'Mark read', delete: 'Delete', viewDetail: 'View',
     busUpdated: 'Route {route} updated', busOffline: 'Route {route} discontinued', unknown: 'You have a new notification',

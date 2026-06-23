@@ -28,6 +28,10 @@ export const router = createRouter({
       },
     },
     {
+      path: '/admin/login', name: 'admin-login',
+      component: () => import('../pages/admin/AdminLoginPage.vue'),
+    },
+    {
       path: '/admin',
       component: () => import('../components/admin/AdminLayout.vue'),
       beforeEnter: adminGuard,

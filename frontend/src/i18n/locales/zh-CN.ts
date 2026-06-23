@@ -54,6 +54,11 @@ export default {
     resetSubmit: '重置密码', changePw: '修改密码', pwChanged: '密码已修改。',
     genericError: '操作失败,请重试。',
   },
+  adminAuth: {
+    title: '管理后台登录',
+    subtitle: '仅限管理员账号访问',
+    noPermission: '此账号无管理员权限',
+  },
   msg: {
     title: '站内信', empty: '暂无消息', markRead: '标记已读', delete: '删除', viewDetail: '查看详情',
     busUpdated: '线路 {route} 已更新', busOffline: '线路 {route} 已下线', unknown: '您有一条新通知',
