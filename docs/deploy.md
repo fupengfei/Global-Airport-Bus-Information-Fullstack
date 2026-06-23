@@ -41,18 +41,34 @@ docker compose -f docker-compose.prod.yml logs -f app  # 看种子导入完成
 
 此时前端在 `127.0.0.1:8081`(只本机可达),后端/DB/Redis 全在容器内网,**不对公网**。
 
-## 四、域名 + HTTPS(Caddy 反代)
+## 四、域名 + HTTPS(宿主 nginx 反代 + certbot)
+
+前置:DNS 加一条 A 记录把域名指向服务器公网 IP(`dig +short 你的域名` 能解析出 IP),
+并在**云安全组放行 80、443**(在云控制台操作,不在服务器里)。
 
 ```bash
-curl -fsSL https://get.caddyserver.com | bash    # 或见 caddyserver.com/docs/install
-vi Caddyfile                                      # 把 yourdomain.com 换成你的域名
-sudo cp Caddyfile /etc/caddy/Caddyfile
-sudo systemctl reload caddy                       # Caddy 自动签 Let's Encrypt 证书
+# 1. 装 nginx(走系统源)
+sudo apt update && sudo apt install -y nginx
+
+# 2. 放反代配置(deploy/nginx.conf 里的 server_name 先改成你的域名)
+sudo cp deploy/nginx.conf /etc/nginx/conf.d/airportbus.conf
+sudo rm -f /etc/nginx/sites-enabled/default      # 关掉 apt 默认欢迎页,避免抢 80
+sudo nginx -t && sudo systemctl reload nginx
+# 此时 http://你的域名 应可访问(已放行安全组 80)
+
+# 3. 上 HTTPS(自动改 nginx 配置:加 443、装证书、80→443 跳转、自动续期)
+sudo apt install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d 你的域名
 ```
 
-打开 `https://yourdomain.com` 即是前台。Caddy 把 443 → `127.0.0.1:8081`,自动续证书。
+完成后 `https://你的域名` 即是前台。宿主 nginx 把 80/443 → `127.0.0.1:8081`;
+前端容器内那层 nginx 再把 `/api/` 转给后端,本层只无脑转发。
 
-> 偏好 nginx + certbot 也行:nginx 反代 `proxy_pass http://127.0.0.1:8081;`,再 `certbot --nginx -d yourdomain.com`。
+> 偏好 Caddy(自动 HTTPS,无需 certbot)也行:用 [Caddyfile](../Caddyfile),
+> 安装见 https://caddyserver.com/docs/install(Debian/Ubuntu 走官方 apt 源)。
+>
+> 排错:`curl -I http://127.0.0.1:8081` 通但公网不通 = 安全组没放行 80/443;
+> certbot 报 `Timeout during connect` = 安全组没放行 80 或 DNS 没生效。
 
 ## 五、首次登录后台
 
