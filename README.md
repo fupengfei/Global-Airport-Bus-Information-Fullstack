@@ -62,3 +62,22 @@ cd frontend && npm install && npm run dev   # :5173,已配 /api 代理到 :8080
 ## 下一步
 
 详见 design.md 的 The Assignment。实现第一步:基于「系统核心数据结构」设计具体 schema + 写幂等种子导入器,把维也纳/上海两城数据导入并跑通查询主线。
+
+## 产品预览
+
+### 前台预览
+
+| | |
+|---|---|
+| ![登录](docs/screenshots/login.png)<br>**登录**:支持用户名/邮箱,邮箱找回密码 | ![注册](docs/screenshots/register.png)<br>**注册**:邮箱验证码 |
+| ![首页·机场查询](docs/screenshots/home.png)<br>**首页 · 机场查询(零登录)**:搜索 + 国家/城市/机场三级选择 + 统一巴士卡片 | ![个人中心·我的收藏](docs/screenshots/me-favorites.png)<br>**个人中心 · 我的收藏**:缩减卡(国家·城市·机场),点卡进详情 |
+| ![建议工单](docs/screenshots/tickets.png)<br>**建议工单**:用户 ↔ 管理员,状态机流转 | ![站内信·变更推送](docs/screenshots/inbox.png)<br>**站内信 · 变更推送**:订阅线路更新时字段级 diff 推送 |
+
+### 管理台预览
+
+| | |
+|---|---|
+| ![后台·概览](docs/screenshots/admin-overview.png)<br>**后台 · 概览**:用户注册与订阅概况 | ![后台·订阅统计](docs/screenshots/admin-subscriptions.png)<br>**后台 · 订阅统计**:按线路/机场/城市聚合 |
+| ![后台·搜索热度](docs/screenshots/admin-hottop.png)<br>**后台 · 搜索热度**:机场搜索热度榜单 | ![后台·巴士信息维护](docs/screenshots/admin-buses.png)<br>**后台 · 巴士信息维护**:树形选取 + 全子表编辑,保存触发变更检测 |
+| ![后台·纠错队列](docs/screenshots/admin-corrections.png)<br>**后台 · 纠错队列**:匿名纠错上报处理 | ![后台·操作记录](docs/screenshots/admin-audit.png)<br>**后台 · 操作记录**:管理操作审计日志 |
+| ![后台·工单队列](docs/screenshots/admin-tickets.png)<br>**后台 · 工单队列**:用户工单处理 | |
