@@ -12,6 +12,7 @@ export interface BusDetail {
   sourceId: string; route: string; destination: string | null; operator: string | null; officialUrl: string | null
   duration: string | null; price: string | null; operatingHours: string | null
   lastUpdated: string | null; fetchFailed: boolean
+  countryName?: string | null; cityName?: string | null; airportName?: string | null; airportCode?: string | null
   stops: string[]
   schedules: { timeRange: string | null; intervalText: string | null; note: string | null }[]
   images: { url: string; caption: string | null }[]

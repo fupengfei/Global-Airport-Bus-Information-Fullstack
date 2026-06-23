@@ -27,5 +27,5 @@ public interface BusQueryMapper {
     record TreeRow(String countryCode, String countryName, String cityName,
                    String airportCode, String airportName) {}
 
-    record RouteAirport(String airportName, String cityName) {}
+    record RouteAirport(String countryName, String cityName, String airportName, String airportCode) {}
 }

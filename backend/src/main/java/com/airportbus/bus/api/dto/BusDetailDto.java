@@ -7,6 +7,7 @@ public record BusDetailDto(
         String sourceId, String route, String destination, String operator, String officialUrl,
         String duration, String price, String operatingHours,
         LocalDate lastUpdated, boolean fetchFailed,
+        String countryName, String cityName, String airportName, String airportCode,
         List<String> stops,
         List<Schedule> schedules,
         List<Image> images,

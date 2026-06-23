@@ -43,7 +43,8 @@ class BusQueryControllerTest {
     void detailReturnsResourceBody() throws Exception {
         when(service.detail("vie-vab1")).thenReturn(new BusDetailDto(
                 "vie-vab1", "VAB 1", "Westbahnhof", "ÖBB", "http://x", "40min", "€11", "03:00-24:00",
-                null, false, List.of("A"), List.of(), List.of(), List.of(), List.of()));
+                null, false, "奥地利", "维也纳", "维也纳国际机场", "VIE",
+                List.of("A"), List.of(), List.of(), List.of(), List.of()));
         mvc.perform(get("/api/v1/buses/vie-vab1"))
            .andExpect(status().isOk())
            .andExpect(jsonPath("$.sourceId").value("vie-vab1"))

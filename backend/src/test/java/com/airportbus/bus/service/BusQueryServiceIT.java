@@ -61,6 +61,15 @@ class BusQueryServiceIT {
     }
 
     @Test
+    void detailCarriesCountryCityAirport() {
+        BusDetailDto d = service.detail("vie-vab1");
+        assertThat(d.countryName()).isNotBlank();
+        assertThat(d.cityName()).isNotBlank();
+        assertThat(d.airportName()).isNotBlank();
+        assertThat(d.airportCode()).isEqualTo("VIE");
+    }
+
+    @Test
     void searchByStopNameMatchesRoute() {
         var r = service.search("中央车站");
         assertThat(r.routes()).extracting(SearchResultDto.RouteHit::sourceId).contains("vie-vab1");

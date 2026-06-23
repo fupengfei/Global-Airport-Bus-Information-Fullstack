@@ -37,10 +37,11 @@
   </select>
 
   <select id="selectRouteAirportCity" resultType="com.airportbus.bus.mapper.BusQueryMapper$RouteAirport">
-    SELECT a.name AS airportName, ci.name AS cityName
+    SELECT co.name AS countryName, ci.name AS cityName, a.name AS airportName, a.code AS airportCode
     FROM bus_route b
-    JOIN airport a ON a.id = b.airport_id
-    JOIN city ci   ON ci.id = a.city_id
+    JOIN airport a  ON a.id = b.airport_id
+    JOIN city ci    ON ci.id = a.city_id
+    JOIN country co ON co.id = ci.country_id
     WHERE b.source_id = #{sourceId} AND b.deleted = 0
   </select>
 

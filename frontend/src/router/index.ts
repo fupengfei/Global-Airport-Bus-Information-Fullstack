@@ -11,6 +11,7 @@ export const router = createRouter({
     { path: '/login', name: 'login', component: () => import('../pages/LoginPage.vue') },
     { path: '/reset-password', name: 'reset', component: () => import('../pages/ResetPasswordPage.vue') },
     { path: '/me', name: 'me', component: () => import('../pages/MePage.vue') },
+    { path: '/me/password', name: 'me-password', component: () => import('../pages/MePasswordPage.vue') },
     {
       path: '/inbox', name: 'inbox',
       component: () => import('../pages/InboxPage.vue'),

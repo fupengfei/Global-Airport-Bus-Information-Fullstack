@@ -74,6 +74,10 @@ public class BusQueryService {
         return new BusDetailDto(
                 h.sourceId(), h.route(), h.destination(), h.operator(), h.officialUrl(),
                 h.duration(), h.price(), h.operatingHours(), h.lastUpdated(), h.fetchFailed(),
+                ra == null ? null : ra.countryName(),
+                ra == null ? null : ra.cityName(),
+                ra == null ? null : ra.airportName(),
+                ra == null ? null : ra.airportCode(),
                 stops,
                 mapper.selectSchedules(h.id()),
                 mapper.selectImages(h.id()),
