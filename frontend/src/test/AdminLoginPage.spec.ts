@@ -5,6 +5,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import zhCN from '../i18n/locales/zh-CN'
 
 const push = vi.fn()
+const replace = vi.fn()
 const auth = {
   isAuthed: false,
   user: null as { role: string } | null,
@@ -13,7 +14,7 @@ const auth = {
 }
 vi.mock('../stores/auth', () => ({ useAuth: () => auth }))
 vi.mock('vue-router', () => ({
-  useRouter: () => ({ push, replace: push }),
+  useRouter: () => ({ push, replace }),
   useRoute: () => ({ query: {} }),
 }))
 
@@ -27,7 +28,7 @@ function mountPage() {
 describe('AdminLoginPage', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
-    push.mockClear(); auth.login.mockClear(); auth.logout.mockClear()
+    push.mockClear(); replace.mockClear(); auth.login.mockClear(); auth.logout.mockClear()
     auth.isAuthed = false; auth.user = null
     auth.login.mockImplementation(async () => {})
   })
@@ -51,6 +52,17 @@ describe('AdminLoginPage', () => {
     expect(auth.logout).not.toHaveBeenCalled()
   })
 
+  it('OPERATOR 登录成功 → 跳 /admin', async () => {
+    auth.login.mockImplementation(async () => { auth.user = { role: 'OPERATOR' } })
+    const w = mountPage()
+    await w.find('input[type=text]').setValue('op')
+    await w.find('input[type=password]').setValue('password123')
+    await w.find('form').trigger('submit')
+    await flushPromises()
+    expect(push).toHaveBeenCalledWith('/admin')
+    expect(auth.logout).not.toHaveBeenCalled()
+  })
+
   it('非管理员登录 → logout 并报无权限,不跳转', async () => {
     auth.login.mockImplementation(async () => { auth.user = { role: 'USER' } })
     const w = mountPage()
@@ -68,7 +80,7 @@ describe('AdminLoginPage', () => {
     auth.user = { role: 'SUPER_ADMIN' }
     mountPage()
     await flushPromises()
-    expect(push).toHaveBeenCalledWith('/admin')
+    expect(replace).toHaveBeenCalledWith('/admin')
   })
 
   it('凭证错误 → 显示本地化错误,不跳转', async () => {
