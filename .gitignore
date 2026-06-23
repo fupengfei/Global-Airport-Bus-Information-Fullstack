@@ -31,4 +31,10 @@ application-local.properties
 .gstack/
 
 # Local agent config (per-machine, not shared)
-.claude/settings.local.json
+.claude/
+.claire/
+fix.md
+
+# Stray / build artifacts
+/META-INF/
+*.tsbuildinfo
