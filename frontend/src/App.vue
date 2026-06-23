@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { setLocale } from './i18n'
 import { useAuth } from './stores/auth'
@@ -8,6 +9,9 @@ import { useMessages } from './stores/messages'
 const { t, locale } = useI18n()
 const auth = useAuth()
 const messages = useMessages()
+const route = useRoute()
+// /admin 自带 topbar + 侧边栏全屏布局,公开页的 topbar/.wrap 不参与(否则头部重复+布局被挤压)
+const isAdmin = computed(() => route?.path?.startsWith('/admin') ?? false)
 
 onMounted(() => {
   if (auth.isAuthed) { useFavorites().load().catch(() => { /* 忽略 */ }); messages.startPolling() }
@@ -15,6 +19,8 @@ onMounted(() => {
 </script>
 
 <template>
+  <router-view v-if="isAdmin" />
+  <template v-else>
   <header class="topbar">
     <div class="topbar__in">
       <router-link class="brand" to="/"><span class="glyph">B</span> {{ t('app.title') }}</router-link>
@@ -36,4 +42,5 @@ onMounted(() => {
     </div>
   </header>
   <main class="wrap"><router-view /></main>
+  </template>
 </template>

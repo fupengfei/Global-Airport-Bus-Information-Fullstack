@@ -35,26 +35,33 @@ async function doLogout() { await auth.logout(); router.push('/') }
 </script>
 
 <template>
-  <div class="authCard" v-if="auth.user">
-    <h2>{{ t('auth.profile') }}</h2>
-    <p><strong>{{ t('auth.username') }}:</strong> {{ auth.user.username }}</p>
-    <p><strong>{{ t('auth.email') }}:</strong> {{ auth.user.email }}</p>
+  <div class="mePage" v-if="auth.user">
+    <h1 class="pageH2" style="margin-top: 0">{{ t('auth.profile') }}</h1>
+    <p class="profileLine"><strong>{{ t('auth.username') }}:</strong> {{ auth.user.username }}</p>
+    <p class="profileLine"><strong>{{ t('auth.email') }}:</strong> {{ auth.user.email }}</p>
 
-    <h3>{{ t('favorite.mine') }}</h3>
+    <h3 class="meSection">{{ t('favorite.mine') }}</h3>
     <StateBlock :loading="favLoading" :error="favError" :empty="!favLoading && !favError && favorites.length === 0" :empty-text="t('favorite.empty')">
       <BusCard v-for="b in favorites" :key="b.sourceId" :bus="b" :detail-link="true" />
     </StateBlock>
 
-    <h3>{{ t('auth.changePw') }}</h3>
-    <p v-if="msg" class="authNote">{{ msg }}</p>
-    <p v-if="err" class="authErr">{{ err }}</p>
-    <form @submit.prevent="changePw">
-      <div class="formrow"><label>{{ t('auth.oldPassword') }}</label>
-        <input class="input" type="password" v-model="oldPw" /></div>
-      <div class="formrow"><label>{{ t('auth.newPassword') }}</label>
-        <input class="input" type="password" v-model="newPw" :placeholder="t('auth.passwordPh')" /></div>
-      <button class="btn btn-primary btn-block">{{ t('auth.changePw') }}</button>
-    </form>
-    <button class="btn btn-ghost btn-block" style="margin-top:12px" @click="doLogout">{{ t('auth.logout') }}</button>
+    <div class="authCard" style="margin-top: 28px">
+      <h3 style="margin-top: 0">{{ t('auth.changePw') }}</h3>
+      <p v-if="msg" class="authNote">{{ msg }}</p>
+      <p v-if="err" class="authErr">{{ err }}</p>
+      <form @submit.prevent="changePw">
+        <div class="formrow"><label>{{ t('auth.oldPassword') }}</label>
+          <input class="input" type="password" v-model="oldPw" /></div>
+        <div class="formrow"><label>{{ t('auth.newPassword') }}</label>
+          <input class="input" type="password" v-model="newPw" :placeholder="t('auth.passwordPh')" /></div>
+        <button class="btn btn-primary btn-block">{{ t('auth.changePw') }}</button>
+      </form>
+      <button class="btn btn-ghost btn-block" style="margin-top:12px" @click="doLogout">{{ t('auth.logout') }}</button>
+    </div>
   </div>
 </template>
+
+<style scoped>
+.profileLine { color: var(--ink-soft); font-size: 14px; margin: 2px 0; }
+.meSection { margin: 22px 0 12px; }
+</style>
